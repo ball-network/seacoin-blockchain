@@ -1,0 +1,8 @@
+[submodule "seacoin-blockchain-gui"]
+	path = seacoin-blockchain-gui
+	url = https://github.com/ball-network/seacoin-blockchain-gui.git
+	branch = main
+[submodule "mozilla-ca"]
+	path = mozilla-ca
+	url = https://github.com/chia-network/mozilla-ca.git
+	branch = main
