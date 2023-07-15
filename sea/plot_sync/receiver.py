@@ -85,7 +85,7 @@ class Receiver:
     _duplicates: List[str]
     _total_plot_size: int
     _update_callback: ReceiverUpdateCallback
-    _staking_ph:  Dict[str, uint32]
+    _staking_ph:  Dict[str, int]
 
     def __init__(
         self,
@@ -209,22 +209,23 @@ class Receiver:
     async def _process_loaded(self, plot_infos: PlotSyncPlotList) -> None:
         self._validate_identifier(plot_infos.identifier)
 
-        farmer_pks: List[G1Element] = []
-        staking_plots: List[int] = []
+        puzzleHash: Dict[bytes, str] = {}
         for plot_info in plot_infos.data:
             if plot_info.filename in self._plots or plot_info.filename in self._current_sync.delta.valid.additions:
                 raise PlotAlreadyAvailableError(State.loaded, plot_info.filename)
             self._current_sync.delta.valid.additions[plot_info.filename] = plot_info
-            if plot_info.farmer_public_key not in farmer_pks:
-                farmer_pks.append(plot_info.farmer_public_key)
-                staking_plots[len(farmer_pks)] = 1
+
+            farmer_public_key = bytes(plot_info.farmer_public_key)
+            ph: Optional[str] = puzzleHash.get(farmer_public_key)
+            if ph is None:
+                ph = create_puzzlehash_for_pk(plot_info.farmer_public_key).hex()
+                puzzleHash[farmer_public_key] = ph
+            if ph not in self._staking_ph:
+                self._staking_ph[ph] = 1
             else:
-                staking_plots[farmer_pks.index(plot_info.farmer_public_key)] += 1
+                self._staking_ph[ph] += 1
 
             self._current_sync.bump_plots_processed()
-
-        for index, farmer_pk in enumerate(farmer_pks):
-            self._staking_ph[create_puzzlehash_for_pk(farmer_pk).hex()] = uint32(staking_plots[index])
 
         # Let the callback receiver know about the sync progress updates
         await self.trigger_callback()

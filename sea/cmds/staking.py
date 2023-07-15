@@ -39,7 +39,7 @@ def staking_info(
     default=None,
 )
 @click.option("-f", "--fingerprint", help="Set the fingerprint to specify which wallet to use", type=int)
-@click.option("-a", "--amount", help="How much sea to send, in GBTC", type=str, required=True)
+@click.option("-a", "--amount", help="How much sea to send, in XSEA", type=str, required=True)
 def staking_send_cmd(
     wallet_rpc_port: Optional[int],
     fingerprint: int,
@@ -66,7 +66,7 @@ def staking_send_cmd(
 @click.option(
     "-a",
     "--amount",
-    help="withdraw staking GBTC, 0 will withdraw all staking",
+    help="withdraw staking XSEA, 0 will withdraw all staking",
     type=str,
     default="0",
     show_default=True
