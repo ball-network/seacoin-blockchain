@@ -111,7 +111,6 @@ class FullNodeRpcApi:
             "/get_mempool_item_by_tx_id": self.get_mempool_item_by_tx_id,
             # Fee estimation
             "/get_fee_estimate": self.get_fee_estimate,
-            "/check_puzzle_hash_coin": self.check_puzzle_hash_coin,
         }
 
     async def _state_changed(self, change: str, change_data: Optional[Dict[str, Any]] = None) -> List[WsRpcMessage]:

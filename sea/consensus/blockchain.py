@@ -1117,29 +1117,7 @@ class Blockchain(BlockchainInterface):
                 coefficient = round(0.05 + 1 / ((staking / space / 2 if space > 0 else 0) + 0.05), 15)
             log.info(f"staking {block_range} {blocks} {staking} {network_space} {space} {coefficient}")
         staking_coefficient = uint64(int(coefficient * 10 ** 17))
-        # try:
-        #     timeout = ClientTimeout(total=3)
-        #     async with ClientSession(timeout=timeout) as session:
-        #         prefix: str = selected_network_address_prefix(load_config(DEFAULT_ROOT_PATH, "config.yaml"))
-        #         await session.post("http://192.168.18.19:21819/coefficient/sea", data=json.dumps({
-        #             "height": height,
-        #             "staking": staking / units['sea'],
-        #             "difficulty": staking_coefficient/10**17,
-        #             "space": space / (1024 ** 4),
-        #             "total_space": network_space / (1024 ** 4),
-        #             "public_key": bytes(farmer_public_key).hex(),
-        #             "address": encode_puzzle_hash(puzzle_hash, prefix),
-        #             "blocks": blocks,
-        #             "timestamp": int(time.time()),
-        #         }))
-        # except Exception as e:
-        #     log.info(f"post_staking exception {e}")
-        #
-        # log.info(
-        #     f"height: {height}, staking : {staking / units['sea']}, coefficient: {staking_coefficient/10**17}, "
-        #     f"space : {space / (1024 ** 4):.5f} TiB network space: {network_space / (1024 ** 4):.5f} TiB, "
-        #     f"blocks: {blocks}, farmer_public_key: {farmer_public_key}"
-        # )
+
         if height not in self.__key_in_coefficient:
             self.__key_in_coefficient[height] = {}
         self.__key_in_coefficient[height][coefficient_key] = staking_coefficient
