@@ -1,11 +1,6 @@
 # File created by: python manage-mypy.py build-exclusions
-sea.cmds.plots
-sea.cmds.plotters
 sea.cmds.start_funcs
-sea.cmds.wallet
-sea.cmds.wallet_funcs
 sea.daemon.server
-sea.data_layer.data_layer_wallet
 sea.introducer.introducer
 sea.introducer.introducer_api
 sea.plotters.bladebit
@@ -17,14 +12,12 @@ sea.plotting.util
 sea.pools.pool_puzzles
 sea.pools.pool_wallet
 sea.pools.pool_wallet_info
-sea.rpc.harvester_rpc_client
 sea.rpc.rpc_client
 sea.rpc.util
 sea.rpc.wallet_rpc_api
 sea.rpc.wallet_rpc_client
 sea.seeder.crawl_store
 sea.seeder.crawler
-sea.seeder.crawler_api
 sea.seeder.dns_server
 sea.seeder.peer_record
 sea.seeder.start_crawler
@@ -53,7 +46,6 @@ sea.util.profiler
 sea.util.service_groups
 sea.util.ssl_check
 sea.wallet.block_record
-sea.wallet.cat_wallet.cat_wallet
 sea.wallet.chialisp
 sea.wallet.did_wallet.did_wallet
 sea.wallet.did_wallet.did_wallet_puzzles
@@ -69,14 +61,12 @@ sea.wallet.puzzles.p2_delegated_puzzle_or_hidden_puzzle
 sea.wallet.puzzles.p2_m_of_n_delegate_direct
 sea.wallet.puzzles.p2_puzzle_hash
 sea.wallet.puzzles.prefarm.spend_prefarm
-sea.wallet.puzzles.puzzle_utils
 sea.wallet.puzzles.singleton_top_layer
 sea.wallet.puzzles.tails
 sea.wallet.trading.trade_store
 sea.wallet.transaction_record
 sea.wallet.util.debug_spend_bundle
 sea.wallet.util.new_peak_queue
-sea.wallet.wallet
 sea.wallet.wallet_coin_store
 sea.wallet.wallet_interested_store
 sea.wallet.wallet_node_api
@@ -104,9 +94,6 @@ tests.core.custom_types.test_coin
 tests.core.custom_types.test_spend_bundle
 tests.core.daemon.test_daemon
 tests.core.full_node.full_sync.test_full_sync
-tests.core.full_node.stores.test_block_store
-tests.core.full_node.stores.test_coin_store
-tests.core.full_node.stores.test_full_node_store
 tests.core.full_node.stores.test_hint_store
 tests.core.full_node.stores.test_sync_store
 tests.core.full_node.test_address_manager
@@ -138,7 +125,6 @@ tests.core.util.test_keychain
 tests.core.util.test_keyring_wrapper
 tests.core.util.test_lru_cache
 tests.core.util.test_significant_bits
-tests.generator.test_list_to_batches
 tests.generator.test_scan
 tests.plotting.test_plot_manager
 tests.pools.test_pool_cmdline
@@ -148,11 +134,9 @@ tests.pools.test_wallet_pool_store
 tests.simulation.test_simulation
 tests.tools.test_run_block
 tests.util.benchmark_cost
-tests.util.db_connection
 tests.util.generator_tools_testing
 tests.util.key_tool
 tests.util.test_full_block_utils
-tests.util.test_lock_queue
 tests.util.test_misc
 tests.util.test_network
 tests.wallet.cat_wallet.test_cat_lifecycle

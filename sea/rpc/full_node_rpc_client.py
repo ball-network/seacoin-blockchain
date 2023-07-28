@@ -279,3 +279,4 @@ class FullNodeRpcClient(RpcClient):
             return response["status"]
         except Exception:
             return False
+

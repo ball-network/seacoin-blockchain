@@ -9,6 +9,7 @@ from sea.util.byte_types import hexstr_to_bytes
 from sea.util.ints import uint64
 from sea.wallet.cat_wallet.cat_info import CATInfo
 from sea.wallet.cat_wallet.cat_utils import (
+    CAT_MOD,
     SpendableCAT,
     construct_cat_puzzle,
     unsigned_spend_bundle_for_spendable_cats,
@@ -16,7 +17,6 @@ from sea.wallet.cat_wallet.cat_utils import (
 from sea.wallet.cat_wallet.lineage_store import CATLineageStore
 from sea.wallet.lineage_proof import LineageProof
 from sea.wallet.payment import Payment
-from sea.wallet.puzzles.cat_loader import CAT_MOD
 from sea.wallet.puzzles.load_clvm import load_clvm_maybe_recompile
 from sea.wallet.transaction_record import TransactionRecord
 
@@ -86,13 +86,14 @@ class GenesisById(LimitationsProgram):
         minted_cat_puzzle_hash: bytes32 = construct_cat_puzzle(CAT_MOD, tail.get_tree_hash(), cat_inner).get_tree_hash()
 
         tx_record: TransactionRecord = await wallet.standard_wallet.generate_signed_transaction(
-            amount, minted_cat_puzzle_hash, uint64(0), origin_id, coins
+            amount, minted_cat_puzzle_hash, uint64(0), coins, origin_id=origin_id
         )
         assert tx_record.spend_bundle is not None
 
+        inner_tree_hash = cat_inner.get_tree_hash()
         inner_solution = wallet.standard_wallet.add_condition_to_solution(
             Program.to([51, 0, -113, tail, []]),
-            wallet.standard_wallet.make_solution(primaries=[Payment(cat_inner.get_tree_hash(), amount)]),
+            wallet.standard_wallet.make_solution(primaries=[Payment(inner_tree_hash, amount, [inner_tree_hash])]),
         )
         eve_spend = unsigned_spend_bundle_for_spendable_cats(
             CAT_MOD,

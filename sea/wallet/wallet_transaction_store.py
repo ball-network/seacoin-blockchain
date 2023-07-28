@@ -10,7 +10,7 @@ from sea.types.mempool_inclusion_status import MempoolInclusionStatus
 from sea.util.db_wrapper import DBWrapper2
 from sea.util.errors import Err
 from sea.util.ints import uint8, uint32
-from sea.wallet.transaction_record import TransactionRecord
+from sea.wallet.transaction_record import TransactionRecord, minimum_send_attempts
 from sea.wallet.transaction_sorting import SortKey
 from sea.wallet.util.query_filter import FilterMode, TransactionTypeFilter
 from sea.wallet.util.transaction_type import TransactionType
@@ -216,7 +216,7 @@ class WalletTransactionStore:
                     records.append(record)
                     self.tx_submitted[record.name] = current_time, 1
                 else:
-                    if count < 5:
+                    if count < minimum_send_attempts:
                         records.append(record)
                         self.tx_submitted[record.name] = time_submitted, (count + 1)
             else:
@@ -387,5 +387,12 @@ class WalletTransactionStore:
     async def delete_unconfirmed_transactions(self, wallet_id: int):
         async with self.db_wrapper.writer_maybe_transaction() as conn:
             await (
-                await conn.execute("DELETE FROM transaction_record WHERE confirmed=0 AND wallet_id=?", (wallet_id,))
+                await conn.execute(
+                    "DELETE FROM transaction_record WHERE confirmed=0 AND wallet_id=? AND type not in (?,?)",
+                    (
+                        wallet_id,
+                        TransactionType.INCOMING_CLAWBACK_SEND.value,
+                        TransactionType.INCOMING_CLAWBACK_RECEIVE.value,
+                    ),
+                )
             ).close()

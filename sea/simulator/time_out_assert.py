@@ -12,7 +12,7 @@ from sea.protocols.protocol_message_types import ProtocolMessageTypes
 log = logging.getLogger(__name__)
 
 system_delays = {
-    # based on data from https://github.com/Ball-Network/seacoin-blockchain/pull/13724
+    # based on data from https://github.com/ball-network/seacoin-blockchain/pull/13724
     "github": {
         "darwin": 20,
         "linux": 1,

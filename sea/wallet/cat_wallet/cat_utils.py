@@ -13,18 +13,20 @@ from sea.types.condition_opcodes import ConditionOpcode
 from sea.types.spend_bundle import SpendBundle
 from sea.util.condition_tools import conditions_dict_for_solution
 from sea.wallet.lineage_proof import LineageProof
-from sea.wallet.puzzles.cat_loader import CAT_MOD
+from sea.wallet.puzzles.load_clvm import load_clvm_maybe_recompile
 from sea.wallet.uncurried_puzzle import UncurriedPuzzle
 
 NULL_SIGNATURE = G2Element()
 
 ANYONE_CAN_SPEND_PUZZLE = Program.to(1)  # simply return the conditions
+CAT_MOD = load_clvm_maybe_recompile("cat_v2.clsp", package_or_requirement="sea.wallet.puzzles")
+CAT_MOD_HASH = CAT_MOD.get_tree_hash()
 
 
 def empty_program() -> Program:
     # ignoring hint error here for:
-    # https://github.com/Chia-Network/clvm/pull/102
-    # https://github.com/Chia-Network/clvm/pull/106
+    # https://github.com/ball-network/clvm/pull/102
+    # https://github.com/ball-network/clvm/pull/106
     return Program.to([])  # type: ignore[no-any-return]
 
 
@@ -95,7 +97,7 @@ def next_info_for_spendable_cat(spendable_cat: SpendableCAT) -> Program:
     c = spendable_cat.coin
     list = [c.parent_coin_info, spendable_cat.inner_puzzle.get_tree_hash(), c.amount]
     # ignoring hint error here for:
-    # https://github.com/Chia-Network/clvm/pull/102
+    # https://github.com/ball-network/clvm/pull/102
     return Program.to(list)  # type: ignore[no-any-return]
 
 

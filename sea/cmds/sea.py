@@ -36,7 +36,7 @@ CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
 
 
 @click.group(
-    help=f"\n  Manage sea blockchain infrastructure ({__version__})\n",
+    help=f"\n  Manage seacoin blockchain infrastructure ({__version__})\n",
     epilog="Try 'sea start node', 'sea netspace -d 192', or 'sea show -s'",
     context_settings=CONTEXT_SETTINGS,
 )
@@ -63,7 +63,7 @@ def cli(
         set_keys_root_path(Path(keys_root_path))
 
     if passphrase_file is not None:
-        from sys import exit
+        import sys
 
         from sea.cmds.passphrase_funcs import cache_passphrase, read_passphrase_from_file
 
@@ -78,7 +78,7 @@ def cli(
                 print(f'Invalid passphrase found in "{passphrase_file.name}"')
             else:
                 print("Invalid passphrase")
-            exit(1)
+            sys.exit(1)
         except Exception as e:
             print(f"Failed to read passphrase: {e}")
 

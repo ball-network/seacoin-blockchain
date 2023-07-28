@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 from sea.full_node.full_node import FullNode
+from sea.full_node.full_node_api import FullNodeAPI
 from sea.server.outbound_message import NodeType
 from sea.server.start_service import Service, async_run
 from sea.simulator.block_tools import BlockTools, test_constants
@@ -34,7 +35,7 @@ def create_full_node_simulator_service(
     bt: BlockTools,
     connect_to_daemon: bool = True,
     override_capabilities: List[Tuple[uint16, str]] = None,
-) -> Service[FullNode]:
+) -> Service[FullNode, FullNodeAPI]:
     service_config = config[SERVICE_NAME]
     constants = bt.constants
 

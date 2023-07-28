@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
 def internal_hash(left_hash: bytes32, right_hash: bytes32) -> bytes32:
     # ignoring hint error here for:
-    # https://github.com/Chia-Network/clvm/pull/102
-    # https://github.com/Chia-Network/clvm/pull/106
+    # https://github.com/ball-network/clvm/pull/102
+    # https://github.com/ball-network/clvm/pull/106
     return Program.to((left_hash, right_hash)).get_tree_hash_precalc(left_hash, right_hash)  # type: ignore[no-any-return] # noqa: E501
 
 
@@ -38,8 +38,8 @@ def calculate_internal_hash(hash: bytes32, other_hash_side: Side, other_hash: by
 
 def leaf_hash(key: bytes, value: bytes) -> bytes32:
     # ignoring hint error here for:
-    # https://github.com/Chia-Network/clvm/pull/102
-    # https://github.com/Chia-Network/clvm/pull/106
+    # https://github.com/ball-network/clvm/pull/102
+    # https://github.com/ball-network/clvm/pull/106
     return Program.to((key, value)).get_tree_hash()  # type: ignore[no-any-return]
 
 
@@ -216,8 +216,8 @@ class ProofOfInclusion:
         return [layer.other_hash for layer in self.layers]
 
     def as_program(self) -> Program:
-        # https://github.com/Chia-Network/clvm/pull/102
-        # https://github.com/Chia-Network/clvm/pull/106
+        # https://github.com/ball-network/clvm/pull/102
+        # https://github.com/ball-network/clvm/pull/106
         return Program.to([self.sibling_sides_integer(), self.sibling_hashes()])  # type: ignore[no-any-return]
 
     def valid(self) -> bool:
@@ -298,6 +298,31 @@ class Root:
             generation=row["generation"],
             status=Status(row["status"]),
         )
+
+    def to_row(self) -> Dict[str, Any]:
+        return {
+            "tree_id": self.tree_id,
+            "node_hash": self.node_hash,
+            "generation": self.generation,
+            "status": self.status.value,
+        }
+
+    @classmethod
+    def unmarshal(cls, marshalled: Dict[str, Any]) -> "Root":
+        return cls(
+            tree_id=bytes32.from_hexstr(marshalled["tree_id"]),
+            node_hash=None if marshalled["node_hash"] is None else bytes32.from_hexstr(marshalled["node_hash"]),
+            generation=marshalled["generation"],
+            status=Status(marshalled["status"]),
+        )
+
+    def marshal(self) -> Dict[str, Any]:
+        return {
+            "tree_id": self.tree_id.hex(),
+            "node_hash": None if self.node_hash is None else self.node_hash.hex(),
+            "generation": self.generation,
+            "status": self.status.value,
+        }
 
 
 node_type_to_class: Dict[NodeType, Union[Type[InternalNode], Type[TerminalNode]]] = {
@@ -617,6 +642,48 @@ class CancelOfferResponse:
         }
 
 
+@final
+@dataclasses.dataclass(frozen=True)
+class ClearPendingRootsRequest:
+    store_id: bytes32
+
+    @classmethod
+    def unmarshal(cls, marshalled: Dict[str, Any]) -> ClearPendingRootsRequest:
+        return cls(
+            store_id=bytes32.from_hexstr(marshalled["store_id"]),
+        )
+
+    def marshal(self) -> Dict[str, Any]:
+        return {
+            "store_id": self.store_id.hex(),
+        }
+
+
+@final
+@dataclasses.dataclass(frozen=True)
+class ClearPendingRootsResponse:
+    success: bool
+
+    root: Optional[Root]
+    # tree_id: bytes32
+    # node_hash: Optional[bytes32]
+    # generation: int
+    # status: Status
+
+    @classmethod
+    def unmarshal(cls, marshalled: Dict[str, Any]) -> ClearPendingRootsResponse:
+        return cls(
+            success=marshalled["success"],
+            root=None if marshalled["root"] is None else Root.unmarshal(marshalled["root"]),
+        )
+
+    def marshal(self) -> Dict[str, Any]:
+        return {
+            "success": self.success,
+            "root": None if self.root is None else self.root.marshal(),
+        }
+
+
 @dataclasses.dataclass(frozen=True)
 class SyncStatus:
     root_hash: bytes32
@@ -637,3 +704,9 @@ class PluginStatus:
                 "downloaders": self.downloaders,
             }
         }
+
+
+@dataclasses.dataclass(frozen=True)
+class InsertResult:
+    node_hash: bytes32
+    root: Root

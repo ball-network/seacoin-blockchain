@@ -12,7 +12,7 @@ if [ ! "$SEA_INSTALLER_VERSION" ]; then
 	echo "WARNING: No environment variable SEA_INSTALLER_VERSION set. Using 0.0.0."
 	SEA_INSTALLER_VERSION="0.0.0"
 fi
-echo "Sea Installer Version is: $SEA_INSTALLER_VERSION"
+echo "SeaCoin Installer Version is: $SEA_INSTALLER_VERSION"
 
 echo "Installing npm utilities"
 cd npm_macos || exit 1
@@ -32,8 +32,14 @@ if [ "$LAST_EXIT_CODE" -ne 0 ]; then
 	echo >&2 "pyinstaller failed!"
 	exit $LAST_EXIT_CODE
 fi
-cp -r dist/daemon ../seacoin-blockchain-gui/packages/gui
 
+
+# Creates a directory of licenses
+echo "Building pip and NPM license directory"
+pwd
+bash ./build_license_directory.sh
+
+cp -r dist/daemon ../seacoin-blockchain-gui/packages/gui
 # Change to the gui package
 cd ../seacoin-blockchain-gui/packages/gui || exit 1
 
@@ -47,7 +53,7 @@ OPT_ARCH="--x64"
 if [ "$(arch)" = "arm64" ]; then
   OPT_ARCH="--arm64"
 fi
-PRODUCT_NAME="Sea"
+PRODUCT_NAME="SeaCoin"
 if [ "$NOTARIZE" == true ]; then
 	echo "Setting credentials for signing"
 	export CSC_LINK=$APPLE_DEV_ID_APP
@@ -75,10 +81,10 @@ mv dist/* ../../../build_scripts/dist/
 cd ../../../build_scripts || exit 1
 
 mkdir final_installer
-DMG_NAME="sea-${SEA_INSTALLER_VERSION}.dmg"
+DMG_NAME="seacoin-${SEA_INSTALLER_VERSION}.dmg"
 if [ "$(arch)" = "arm64" ]; then
-  mv dist/"${DMG_NAME}" dist/sea-"${SEA_INSTALLER_VERSION}"-arm64.dmg
-  DMG_NAME=sea-${SEA_INSTALLER_VERSION}-arm64.dmg
+  mv dist/"${DMG_NAME}" dist/seacoin-"${SEA_INSTALLER_VERSION}"-arm64.dmg
+  DMG_NAME=seacoin-${SEA_INSTALLER_VERSION}-arm64.dmg
 fi
 mv dist/"$DMG_NAME" final_installer/
 
@@ -98,7 +104,7 @@ fi
 #
 # Ask for username and password. password should be an app specific password.
 # Generate app specific password https://support.apple.com/en-us/HT204397
-# xcrun altool --notarize-app -f Sea-0.1.X.dmg --primary-bundle-id vip.seacoin.blockchain -u username -p password
+# xcrun altool --notarize-app -f SeaCoin-0.1.X.dmg --primary-bundle-id vip.seacoin.blockchain -u username -p password
 # xcrun altool --notarize-app; -should return REQUEST-ID, use it in next command
 #
 # Wait until following command return a success message".
@@ -106,7 +112,7 @@ fi
 # It can take a while, run it every few minutes.
 #
 # Once that is successful, execute the following command":
-# xcrun stapler staple Sea-0.1.X.dmg
+# xcrun stapler staple SeaCoin-0.1.X.dmg
 #
 # Validate DMG:
-# xcrun stapler validate Sea-0.1.X.dmg
+# xcrun stapler validate SeaCoin-0.1.X.dmg

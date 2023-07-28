@@ -1,14 +1,17 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Optional, Set
+from typing import TYPE_CHECKING, List, Optional, Set, Tuple
 
 from blspy import G1Element
-from typing_extensions import Protocol
+from typing_extensions import NotRequired, Protocol, TypedDict
 
 from sea.server.ws_connection import WSSeaConnection
 from sea.types.blockchain_format.coin import Coin
+from sea.types.blockchain_format.program import Program
 from sea.types.blockchain_format.sized_bytes import bytes32
+from sea.types.spend_bundle import SpendBundle
 from sea.util.ints import uint32, uint64, uint128
+from sea.wallet.nft_wallet.nft_info import NFTCoinInfo
 from sea.wallet.util.wallet_types import WalletType
 from sea.wallet.wallet_coin_record import WalletCoinRecord
 from sea.wallet.wallet_info import WalletInfo
@@ -68,3 +71,28 @@ class WalletProtocol(Protocol):
     # WalletStateManager is only imported for type hinting thus leaving pylint
     # unable to process this
     wallet_state_manager: WalletStateManager  # pylint: disable=used-before-assignment
+
+
+class GSTOptionalArgs(TypedDict):
+    # DataLayerWallet
+    launcher_id: NotRequired[Optional[bytes32]]
+    new_root_hash: NotRequired[Optional[bytes32]]
+    sign: NotRequired[bool]
+    add_pending_singleton: NotRequired[bool]
+    announce_new_state: NotRequired[bool]
+    # CATWallet
+    excluded_cat_coins: NotRequired[Optional[Set[Coin]]]
+    cat_discrepancy: NotRequired[Optional[Tuple[int, Program, Program]]]
+    # NFTWallet
+    nft_coin: NotRequired[Optional[NFTCoinInfo]]
+    new_owner: NotRequired[Optional[bytes]]
+    new_did_inner_hash: NotRequired[Optional[bytes]]
+    trade_prices_list: NotRequired[Optional[Program]]
+    additional_bundles: NotRequired[List[SpendBundle]]
+    metadata_update: NotRequired[Optional[Tuple[str, str]]]
+    # VCWallet
+    new_proof_hash: NotRequired[Optional[bytes32]]
+    provider_inner_puzhash: NotRequired[Optional[bytes32]]
+    # Wallet
+    origin_id: NotRequired[Optional[bytes32]]
+    negative_change_allowed: NotRequired[bool]

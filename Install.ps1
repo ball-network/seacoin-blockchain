@@ -45,7 +45,7 @@ if ($null -eq (Get-Command py -ErrorAction SilentlyContinue))
     Exit 1
 }
 
-$supportedPythonVersions = "3.11", "3.10", "3.9", "3.8", "3.7"
+$supportedPythonVersions = "3.11", "3.10", "3.9", "3.8"
 if ("$env:INSTALL_PYTHON_VERSION" -ne "")
 {
     $pythonVersion = $env:INSTALL_PYTHON_VERSION
@@ -123,7 +123,7 @@ Write-Output "For assistance join us on Discord in the #support chat channel:"
 Write-Output "https://discord.gg/sea"
 Write-Output ""
 Write-Output "Try the Quick Start Guide to running seacoin-blockchain:"
-Write-Output "https://github.com/Ball-Network/seacoin-blockchain/wiki/Quick-Start-Guide"
+Write-Output "https://github.com/ball-network/seacoin-blockchain/wiki/Quick-Start-Guide"
 Write-Output ""
 Write-Output "To install the GUI run '.\venv\scripts\Activate.ps1' then '.\Install-gui.ps1'."
 Write-Output ""

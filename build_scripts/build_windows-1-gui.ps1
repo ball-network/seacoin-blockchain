@@ -49,11 +49,11 @@ Remove-Item packages\icons -Recurse -Force
 Remove-Item packages\wallets -Recurse -Force
 
 # Remove unused fat npm modules from the gui package
-Set-Location -Path ".\packages\gui\node_modules" -PassThru
-Write-Output "Remove unused node_modules in the gui package to make cache slim more"
-Remove-Item electron\dist -Recurse -Force # ~186MB
-Remove-Item "@mui" -Recurse -Force # ~71MB
-Remove-Item typescript -Recurse -Force # ~63MB
+#Set-Location -Path ".\packages\gui\node_modules" -PassThru
+#Write-Output "Remove unused node_modules in the gui package to make cache slim more"
+#Remove-Item electron\dist -Recurse -Force # ~186MB
+#Remove-Item "@mui" -Recurse -Force # ~71MB
+#Remove-Item typescript -Recurse -Force # ~63MB
 
 # Remove `packages/gui/node_modules/@sea-network` because it causes an error on later `electron-packager` command
-Remove-Item "@sea-network" -Recurse -Force
+#Remove-Item "@sea-network" -Recurse -Force

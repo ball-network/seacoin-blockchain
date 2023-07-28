@@ -33,7 +33,6 @@ def create_farmer_coin(block_height: uint32, puzzle_hash: bytes32, reward: uint6
     parent_id = farmer_parent_id(block_height, genesis_challenge)
     return Coin(parent_id, puzzle_hash, reward)
 
-
 def create_community_coin(block_height: uint32, puzzle_hash: bytes32, reward: uint64, genesis_challenge: bytes32) -> Coin:
     community_id = community_parent_id(block_height, genesis_challenge)
     return Coin(community_id, puzzle_hash, reward)

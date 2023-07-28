@@ -26,6 +26,7 @@ class NewSignagePoint(Streamable):
     difficulty: uint64
     sub_slot_iters: uint64
     signage_point_index: uint8
+    peak_height: uint32
 
 
 @streamable
@@ -60,6 +61,7 @@ class FarmingInfo(Streamable):
     passed: uint32
     proofs: uint32
     total_plots: uint32
+    lookup_time: uint64
 
 
 @streamable
@@ -74,11 +76,11 @@ class SignedValues(Streamable):
 @streamable
 @dataclass(frozen=True)
 class FarmerStakingCoefficients(Streamable):
-    staking_height: uint32
     staking_coefficients: List[Tuple[G1Element, uint64]]
 
 
 @streamable
 @dataclass(frozen=True)
 class RequestStakingCoefficients(Streamable):
+    height: uint32
     farmer_public_keys: List[G1Element]

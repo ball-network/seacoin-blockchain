@@ -2,10 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import dataclasses
-import json
+import enum
 import logging
 import multiprocessing
-import time
 import traceback
 from concurrent.futures import Executor
 from concurrent.futures.process import ProcessPoolExecutor
@@ -14,10 +13,8 @@ from multiprocessing.context import BaseContext
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
-from aiohttp import ClientTimeout, ClientSession
 from blspy import G1Element
 
-from sea.cmds.units import units
 from sea.consensus.block_body_validation import validate_block_body
 from sea.consensus.block_header_validation import validate_unfinished_header_block
 from sea.consensus.block_record import BlockRecord
@@ -53,14 +50,12 @@ from sea.types.header_block import HeaderBlock
 from sea.types.unfinished_block import UnfinishedBlock
 from sea.types.unfinished_header_block import UnfinishedHeaderBlock
 from sea.types.weight_proof import SubEpochChallengeSegment
-from sea.util.bech32m import encode_puzzle_hash
-from sea.util.config import load_config, selected_network_address_prefix
-from sea.util.default_root import DEFAULT_ROOT_PATH
 from sea.util.errors import ConsensusError, Err
 from sea.util.generator_tools import get_block_header, tx_removals_and_additions
 from sea.util.hash import std_hash
 from sea.util.inline_executor import InlineExecutor
 from sea.util.ints import uint16, uint32, uint64, uint128
+from sea.util.priority_mutex import PriorityMutex
 from sea.util.setproctitle import getproctitle, setproctitle
 
 log = logging.getLogger(__name__)
@@ -89,6 +84,12 @@ class StateChangeSummary:
     new_rewards: List[Coin]
 
 
+class BlockchainMutexPriority(enum.IntEnum):
+    # lower values are higher priority
+    low = 1
+    high = 0
+
+
 class Blockchain(BlockchainInterface):
     constants: ConsensusConstants
 
@@ -114,7 +115,7 @@ class Blockchain(BlockchainInterface):
     _shut_down: bool
 
     # Lock to prevent simultaneous reads and writes
-    lock: asyncio.Lock
+    priority_mutex: PriorityMutex[BlockchainMutexPriority]
     compact_proof_lock: asyncio.Lock
 
     __key_in_coefficient: Dict[uint32, Dict[bytes, uint64]]
@@ -137,7 +138,9 @@ class Blockchain(BlockchainInterface):
         in the consensus constants config.
         """
         self = Blockchain()
-        self.lock = asyncio.Lock()  # External lock handled by full node
+        # Blocks are validated under high priority, and transactions under low priority. This guarantees blocks will
+        # be validated first.
+        self.priority_mutex = PriorityMutex.create(priority_type=BlockchainMutexPriority)
         self.compact_proof_lock = asyncio.Lock()
         if single_threaded:
             self.pool = InlineExecutor()
@@ -255,12 +258,8 @@ class Blockchain(BlockchainInterface):
         assert required_iters is not None
 
         # Check staking_coefficient
-        pos = block.reward_chain_block.proof_of_space
-        if self._peak_height is not None and pos.staking_height < max(0, self._peak_height - 50):
-            return AddBlockResult.INVALID_BLOCK, Err.INVALID_STAKING_COEFFICIENT, None
-        elif await self.check_staking_coefficient(pos):
-            log.warning(f"height {block.height} staking coefficient error {pos.staking_height} "
-                        f"{pos.staking_coefficient}")
+        if await self.check_staking_coefficient(block.reward_chain_block.proof_of_space):
+            log.error("staking coefficient error")
             return AddBlockResult.INVALID_BLOCK, Err.INVALID_STAKING_COEFFICIENT, None
 
         error_code, _ = await validate_block_body(
@@ -473,7 +472,11 @@ class Blockchain(BlockchainInterface):
             block_generator: Optional[BlockGenerator] = await self.get_block_generator(block)
             assert block_generator is not None
             npc_result = get_name_puzzle_conditions(
-                block_generator, self.constants.MAX_BLOCK_COST_CLVM, mempool_mode=False, height=block.height
+                block_generator,
+                self.constants.MAX_BLOCK_COST_CLVM,
+                mempool_mode=False,
+                height=block.height,
+                constants=self.constants,
             )
         tx_removals, tx_additions = tx_removals_and_additions(npc_result.conds)
         return tx_removals, tx_additions, npc_result
@@ -845,7 +848,7 @@ class Blockchain(BlockchainInterface):
         """
         records: List[BlockRecord] = []
         hashes: List[bytes32] = []
-        assert batch_size < 999  # sqlite in python 3.7 has a limit on 999 variables in queries
+        assert batch_size < self.block_store.db_wrapper.host_parameter_limit
         for height in heights:
             header_hash: Optional[bytes32] = self.height_to_hash(height)
             if header_hash is None:
@@ -999,7 +1002,12 @@ class Blockchain(BlockchainInterface):
         assert len(result) == len(ref_list)
         return BlockGenerator(block.transactions_generator, result, [])
 
-    async def get_network_space(self, newer_block_bytes: bytes32, older_block_bytes: bytes32) -> uint128:
+    async def _get_network_space(
+        self,
+        space_factor: float,
+        newer_block_bytes: bytes32,
+        older_block_bytes: bytes32,
+    ) -> uint128:
         """
         Retrieves an estimate of total space validating the chain
         between two block header hashes.
@@ -1021,19 +1029,63 @@ class Blockchain(BlockchainInterface):
         additional_difficulty_constant = self.constants.DIFFICULTY_CONSTANT_FACTOR
         eligible_plots_filter_multiplier = 2 ** self.constants.NUMBER_ZERO_BITS_PLOT_FILTER
         network_space_bytes_estimate = (
-                UI_ACTUAL_SPACE_CONSTANT_FACTOR
-                * weight_div_iters
-                * additional_difficulty_constant
-                * eligible_plots_filter_multiplier
+            space_factor
+            * weight_div_iters
+            * eligible_plots_filter_multiplier
+            * additional_difficulty_constant
         )
         return uint128(network_space_bytes_estimate)
 
-    async def get_height_network_space(self, block_range: int, height: Optional[uint32]) -> uint128:
+    async def get_network_space(
+        self,
+        newer_block_bytes: bytes32,
+        older_block_bytes: bytes32,
+    ) -> uint128:
+        return await self._get_network_space(UI_ACTUAL_SPACE_CONSTANT_FACTOR, newer_block_bytes, older_block_bytes)
+
+    async def get_staking_network_space(
+        self,
+        newer_block_bytes: bytes32,
+        older_block_bytes: bytes32,
+    ) -> uint128:
+        return await self._get_network_space(0.762, newer_block_bytes, older_block_bytes)
+
+    async def _get_height_network_space(
+        self,
+        space_factor: float,
+        block_range: int,
+        height: Optional[uint32],
+    ) -> uint128:
         if height is not None and height > 1:
             # Average over the last day
             older_block_bytes = self.height_to_hash(uint32(max(1, height - block_range)))
             assert older_block_bytes is not None
+            return await self._get_network_space(space_factor, self.height_to_hash(height), older_block_bytes)
+        else:
+            return uint128(0)
+
+    async def get_height_network_space(
+        self,
+        height: Optional[uint32],
+    ) -> uint128:
+        if height is not None and height > 1:
+            # Average over the last day
+            older_block_bytes = self.height_to_hash(uint32(max(1, height - 4096)))
+            assert older_block_bytes is not None
             return await self.get_network_space(self.height_to_hash(height), older_block_bytes)
+        else:
+            return uint128(0)
+
+    async def get_staking_height_network_space(
+        self,
+        block_range: int,
+        height: Optional[uint32],
+    ) -> uint128:
+        if height is not None and height > 1:
+            # Average over the last day
+            older_block_bytes = self.height_to_hash(uint32(max(1, height - block_range)))
+            assert older_block_bytes is not None
+            return await self.get_staking_network_space(self.height_to_hash(height), older_block_bytes)
         else:
             return uint128(0)
 
@@ -1058,12 +1110,12 @@ class Blockchain(BlockchainInterface):
             staking = await self.get_peak_farmer_staking(puzzle_hash, height)
             network_space: Optional[uint128] = self.__height_in_network_space.get(height)
             if network_space is None:
-                network_space = await self.get_height_network_space(block_range, height)
+                network_space = await self.get_staking_height_network_space(block_range, height)
                 self.__height_in_network_space[height] = network_space
             space = int(network_space * blocks / (block_range if height > block_range else height))
             if network_space != 0 and staking > 0:
                 coefficient = round(0.05 + 1 / ((staking / space / 2 if space > 0 else 0) + 0.05), 15)
-
+            log.info(f"staking {block_range} {blocks} {staking} {network_space} {space} {coefficient}")
         staking_coefficient = uint64(int(coefficient * 10 ** 17))
         # try:
         #     timeout = ClientTimeout(total=3)

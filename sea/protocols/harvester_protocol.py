@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 from blspy import G1Element, G2Element
 
@@ -40,7 +40,7 @@ class NewSignagePointHarvester(Streamable):
     signage_point_index: uint8
     sp_hash: bytes32
     pool_difficulties: List[PoolDifficulty]
-    # difficulty_coefficients of each farmer public key's puzzle hash
+    filter_prefix_bits: uint8
     staking_height: uint32
     staking_coefficients: List[Tuple[G1Element, uint64]]
 
@@ -84,9 +84,9 @@ class Plot(Streamable):
     pool_public_key: Optional[G1Element]
     pool_contract_puzzle_hash: Optional[bytes32]
     plot_public_key: G1Element
-    farmer_public_key: G1Element
     file_size: uint64
     time_modified: uint64
+    compression_level: Optional[uint8]
 
 
 @streamable
@@ -118,11 +118,13 @@ class PlotSyncStart(Streamable):
     initial: bool
     last_sync_id: uint64
     plot_file_count: uint32
+    harvesting_mode: uint8
 
     def __str__(self) -> str:
         return (
             f"PlotSyncStart: identifier {self.identifier}, initial {self.initial}, "
-            f"last_sync_id {self.last_sync_id}, plot_file_count {self.plot_file_count}"
+            f"last_sync_id {self.last_sync_id}, plot_file_count {self.plot_file_count}, "
+            f"harvesting_mode {self.harvesting_mode}"
         )
 
 
@@ -142,6 +144,8 @@ class PlotSyncPathList(Streamable):
 class PlotSyncPlotList(Streamable):
     identifier: PlotSyncIdentifier
     data: List[Plot]
+    ph_hex: List[bytes32]
+    ph_num: List[uint32]
     final: bool
 
     def __str__(self) -> str:

@@ -16,10 +16,15 @@ log = logging.getLogger(__name__)
 
 
 class TimelordAPI:
+    log: logging.Logger
     timelord: Timelord
 
     def __init__(self, timelord) -> None:
+        self.log = logging.getLogger(__name__)
         self.timelord = timelord
+
+    def ready(self) -> bool:
+        return True
 
     def _set_state_changed_callback(self, callback: StateChangedProtocol) -> None:
         self.timelord.state_changed_callback = callback
@@ -64,6 +69,7 @@ class TimelordAPI:
                     new_unfinished_block.reward_chain_block,
                     self.timelord.last_state.get_sub_slot_iters(),
                     self.timelord.last_state.get_difficulty(),
+                    self.timelord.get_height(),
                 )
             except Exception:
                 return None

@@ -9,6 +9,7 @@ from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.types.coin_spend import CoinSpend
 from sea.util.ints import uint64
 from sea.wallet.cat_wallet.cat_utils import (
+    CAT_MOD,
     SpendableCAT,
     construct_cat_puzzle,
     match_cat_puzzle,
@@ -16,7 +17,6 @@ from sea.wallet.cat_wallet.cat_utils import (
 )
 from sea.wallet.lineage_proof import LineageProof
 from sea.wallet.puzzle_drivers import PuzzleInfo, Solver
-from sea.wallet.puzzles.cat_loader import CAT_MOD
 from sea.wallet.uncurried_puzzle import UncurriedPuzzle, uncurry_puzzle
 
 

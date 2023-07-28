@@ -44,6 +44,7 @@ def calculate_base_farmer_reward(height: uint32) -> uint64:
     (3 years, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
     rates increase continuously.
     """
+
     return uint64(int((1 / 8) * calculate_reward(height) * _mojo_per_sea))
 
 
@@ -51,4 +52,5 @@ def calculate_community_reward(height: uint32) -> uint64:
     """
     Community Rewards: 3% every block
     """
+
     return uint64(int((3 / 100) * calculate_reward(height) * _mojo_per_sea))

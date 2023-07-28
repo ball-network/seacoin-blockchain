@@ -100,11 +100,11 @@ def configure(
         if testnet:
             if testnet == "true" or testnet == "t":
                 print("Setting Testnet")
-                testnet_port = "58444"
-                testnet_introducer = "introducer-testnet10.seacoin.vip"
-                testnet_dns_introducer = "dns-introducer-testnet10.seacoin.vip"
-                bootstrap_peers = ["testnet10-node.seacoin.vip"]
-                testnet = "testnet10"
+                testnet_port = "30100"
+                testnet_introducer = "introducer-testnet0.seacoin.vip"
+                testnet_dns_introducer = "dns-introducer-testnet0.seacoin.vip"
+                bootstrap_peers = ["testnet0-node.seacoin.vip"]
+                testnet = "testnet0"
                 config["full_node"]["port"] = int(testnet_port)
                 if config["full_node"]["introducer_peer"] is None:
                     config["full_node"]["introducer_peer"] = {}
@@ -144,7 +144,7 @@ def configure(
 
             elif testnet == "false" or testnet == "f":
                 print("Setting Mainnet")
-                mainnet_port = "8444"
+                mainnet_port = "30000"
                 mainnet_introducer = "introducer.seacoin.vip"
                 mainnet_dns_introducer = "dns-introducer.seacoin.vip"
                 bootstrap_peers = ["node.seacoin.vip"]

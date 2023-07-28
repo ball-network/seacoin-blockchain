@@ -114,6 +114,8 @@ class ProtocolMessageTypes(Enum):
     request_fee_estimates = 89
     respond_fee_estimates = 90
 
+    error = 255
+
     # staking
     request_staking_coefficients = 210
     respond_staking_coefficients = 211

@@ -12,10 +12,9 @@ from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.types.coin_spend import CoinSpend
 from sea.util.hash import std_hash
 from sea.util.ints import uint64
-from sea.wallet.cat_wallet.cat_utils import construct_cat_puzzle
+from sea.wallet.cat_wallet.cat_utils import CAT_MOD, construct_cat_puzzle
 from sea.wallet.lineage_proof import LineageProof
 from sea.wallet.payment import Payment
-from sea.wallet.puzzles.cat_loader import CAT_MOD
 from sea.wallet.puzzles.load_clvm import load_clvm_maybe_recompile
 from sea.wallet.puzzles.singleton_top_layer_v1_1 import SINGLETON_LAUNCHER_HASH, SINGLETON_MOD_HASH
 from sea.wallet.uncurried_puzzle import UncurriedPuzzle, uncurry_puzzle

@@ -1,8 +1,8 @@
+import asyncio
+from decimal import Decimal
 from typing import Optional
 
 import click
-
-from sea.cmds.cmds_util import execute_with_wallet
 
 
 @click.group("staking", short_help="Manage your staking")
@@ -24,10 +24,9 @@ def staking_info(
     wallet_rpc_port: Optional[int],
     fingerprint: int,
 ) -> None:
-    import asyncio
-    from .staking_funcs import info
+    from .staking_funcs import staking_info
 
-    asyncio.run(execute_with_wallet(wallet_rpc_port, fingerprint, {}, info))
+    asyncio.run(staking_info(wallet_rpc_port, fingerprint))
 
 
 @staking_cmd.command("send", short_help="Send sea to staking address")
@@ -45,13 +44,9 @@ def staking_send_cmd(
     fingerprint: int,
     amount: str,
 ) -> None:
-    extra_params = {
-        "amount": amount,
-    }
-    import asyncio
-    from .staking_funcs import send
+    from .staking_funcs import staking_send
 
-    asyncio.run(execute_with_wallet(wallet_rpc_port, fingerprint, extra_params, send))
+    asyncio.run(staking_send(wallet_rpc_port, fingerprint, Decimal(amount)))
 
 
 @staking_cmd.command("withdraw", short_help="Withdraw staking sea")
@@ -78,11 +73,6 @@ def staking_withdraw_cmd(
     amount: str,
     address: str,
 ) -> None:
-    extra_params = {
-        "amount": amount,
-        "address": address,
-    }
-    import asyncio
-    from .staking_funcs import withdraw
+    from .staking_funcs import staking_withdraw
 
-    asyncio.run(execute_with_wallet(wallet_rpc_port, fingerprint, extra_params, withdraw))
+    asyncio.run(staking_withdraw(wallet_rpc_port, fingerprint, Decimal(amount), address))

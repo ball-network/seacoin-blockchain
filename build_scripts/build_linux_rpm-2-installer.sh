@@ -21,7 +21,7 @@ if [ ! "$SEA_INSTALLER_VERSION" ]; then
 	echo "WARNING: No environment variable SEA_INSTALLER_VERSION set. Using 0.0.0."
 	SEA_INSTALLER_VERSION="0.0.0"
 fi
-echo "Sea Installer Version is: $SEA_INSTALLER_VERSION"
+echo "SeaCoin Installer Version is: $SEA_INSTALLER_VERSION"
 
 echo "Installing npm and electron packagers"
 cd npm_linux || exit 1
@@ -42,11 +42,17 @@ if [ "$LAST_EXIT_CODE" -ne 0 ]; then
 	exit $LAST_EXIT_CODE
 fi
 
+# Creates a directory of licenses
+echo "Building pip and NPM license directory"
+pwd
+bash ./build_license_directory.sh
+
 # Builds CLI only rpm
 CLI_RPM_BASE="seacoin-blockchain-cli-$SEA_INSTALLER_VERSION-1.$REDHAT_PLATFORM"
 mkdir -p "dist/$CLI_RPM_BASE/opt/sea"
 mkdir -p "dist/$CLI_RPM_BASE/usr/bin"
 cp -r dist/daemon/* "dist/$CLI_RPM_BASE/opt/sea/"
+
 ln -s ../../opt/sea/sea "dist/$CLI_RPM_BASE/usr/bin/sea"
 # This is built into the base build image
 # shellcheck disable=SC1091
@@ -66,9 +72,7 @@ fpm -s dir -t rpm \
   --depends /usr/lib64/libcrypt.so.1 \
   .
 # CLI only rpm done
-
 cp -r dist/daemon ../seacoin-blockchain-gui/packages/gui
-
 # Change to the gui package
 cd ../seacoin-blockchain-gui/packages/gui || exit 1
 
@@ -81,7 +85,7 @@ OPT_ARCH="--x64"
 if [ "$REDHAT_PLATFORM" = "arm64" ]; then
   OPT_ARCH="--arm64"
 fi
-PRODUCT_NAME="sea"
+PRODUCT_NAME="seacoin"
 echo electron-builder build --linux rpm "${OPT_ARCH}" \
   --config.extraMetadata.name=seacoin-blockchain \
   --config.productName="${PRODUCT_NAME}" --config.linux.desktop.Name="SeaCoin Blockchain" \

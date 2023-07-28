@@ -21,6 +21,11 @@ $SPEC_FILE = (python -c 'import sea; print(sea.PYINSTALLER_SPEC_PATH)') -join "`
 pyinstaller --log-level INFO $SPEC_FILE
 
 Write-Output "   ---"
+Write-Output "Creating a directory of licenses from pip and npm packages"
+Write-Output "   ---"
+bash ./build_win_license_dir.sh
+
+Write-Output "   ---"
 Write-Output "Copy sea executables to seacoin-blockchain-gui\"
 Write-Output "   ---"
 Copy-Item "dist\daemon" -Destination "..\seacoin-blockchain-gui\packages\gui\" -Recurse
@@ -52,7 +57,7 @@ editbin.exe /STACK:8000000 daemon\sea.exe
 Write-Output "   ---"
 
 $packageVersion = "$env:SEA_INSTALLER_VERSION"
-$packageName = "Sea-$packageVersion"
+$packageName = "SeaCoin-$packageVersion"
 
 Write-Output "packageName is $packageName"
 
@@ -67,7 +72,7 @@ Write-Output "   ---"
 
 Write-Output "   ---"
 Write-Output "electron-builder"
-electron-builder build --win --x64 --config.productName="Sea"
+electron-builder build --win --x64 --config.productName="SeaCoin"
 Get-ChildItem dist\win-unpacked\resources
 Write-Output "   ---"
 
@@ -75,7 +80,7 @@ If ($env:HAS_SECRET) {
    Write-Output "   ---"
    Write-Output "Verify signature"
    Write-Output "   ---"
-   signtool.exe verify /v /pa .\dist\SeaSetup-$packageVersion.exe
+   signtool.exe verify /v /pa .\dist\SeaCoinSetup-$packageVersion.exe
    }   Else    {
    Write-Output "Skipping verify signatures - no authorization to install certificates"
 }
@@ -83,9 +88,9 @@ If ($env:HAS_SECRET) {
 Write-Output "   ---"
 Write-Output "Moving final installers to expected location"
 Write-Output "   ---"
-Copy-Item ".\dist\win-unpacked" -Destination "$env:GITHUB_WORKSPACE\seacoin-blockchain-gui\Sea-win32-x64" -Recurse
+Copy-Item ".\dist\win-unpacked" -Destination "$env:GITHUB_WORKSPACE\seacoin-blockchain-gui\SeaCoin-win32-x64" -Recurse
 mkdir "$env:GITHUB_WORKSPACE\seacoin-blockchain-gui\release-builds\windows-installer" -ea 0
-Copy-Item ".\dist\SeaSetup-$packageVersion.exe" -Destination "$env:GITHUB_WORKSPACE\seacoin-blockchain-gui\release-builds\windows-installer"
+Copy-Item ".\dist\SeaCoinSetup-$packageVersion.exe" -Destination "$env:GITHUB_WORKSPACE\seacoin-blockchain-gui\release-builds\windows-installer"
 
 Write-Output "   ---"
 Write-Output "Windows Installer complete"

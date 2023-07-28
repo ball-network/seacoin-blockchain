@@ -2,15 +2,13 @@ from __future__ import annotations
 
 from typing import Dict, List, Optional
 
-from blspy import G1Element
-
 from sea.consensus.block_record import BlockRecord
 from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.types.blockchain_format.sub_epoch_summary import SubEpochSummary
 from sea.types.blockchain_format.vdf import VDFInfo
 from sea.types.header_block import HeaderBlock
 from sea.types.weight_proof import SubEpochChallengeSegment
-from sea.util.ints import uint32, uint64
+from sea.util.ints import uint32
 
 
 class BlockchainInterface:

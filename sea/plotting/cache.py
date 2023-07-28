@@ -21,7 +21,7 @@ from sea.wallet.derive_keys import master_sk_to_local_sk
 
 log = logging.getLogger(__name__)
 
-CURRENT_VERSION: int = 1
+CURRENT_VERSION: int = 2
 
 
 @streamable
@@ -156,8 +156,8 @@ class Cache:
                     )
                     # TODO, drop the below entry dropping after few versions or whenever we force a cache recreation.
                     #       it's here to filter invalid cache entries coming from bladebit RAM plotting.
-                    #       Related: - https://github.com/Chia-Network/chia-blockchain/issues/13084
-                    #                - https://github.com/Chia-Network/chiapos/pull/337
+                    #       Related: - https://github.com/ball-network/seacoin-blockchain/issues/13084
+                    #                - https://github.com/ball-network/chiapos/pull/337
                     k = new_entry.prover.get_size()
                     if k not in estimated_c2_sizes:
                         estimated_c2_sizes[k] = ceil(2**k / 100_000_000) * ceil(k / 8)
@@ -166,7 +166,7 @@ class Cache:
                     # Estimated C2 size + memo size + 2000 (static data + path)
                     # static data: version(2) + table pointers (<=96) + id(32) + k(1) => ~130
                     # path: up to ~1870, all above will lead to false positive.
-                    # See https://github.com/Chia-Network/chiapos/blob/3ee062b86315823dd775453ad320b8be892c7df3/src/prover_disk.hpp#L282-L287  # noqa: E501
+                    # See https://github.com/ball-network/chiapos/blob/3ee062b86315823dd775453ad320b8be892c7df3/src/prover_disk.hpp#L282-L287  # noqa: E501
                     if prover_size > (estimated_c2_sizes[k] + memo_size + 2000):
                         log.warning(
                             "Suspicious cache entry dropped. Recommended: stop the harvester, remove "
