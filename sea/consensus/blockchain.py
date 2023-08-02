@@ -1115,7 +1115,6 @@ class Blockchain(BlockchainInterface):
             space = int(network_space * blocks / (block_range if height > block_range else height))
             if network_space != 0 and staking > 0:
                 coefficient = round(0.05 + 1 / ((staking / space / 2 if space > 0 else 0) + 0.05), 15)
-            log.info(f"staking {block_range} {blocks} {staking} {network_space} {space} {coefficient}")
         staking_coefficient = uint64(int(coefficient * 10 ** 17))
 
         if height not in self.__key_in_coefficient:
