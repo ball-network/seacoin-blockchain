@@ -53,7 +53,7 @@ if TYPE_CHECKING:
     from sea.server.ws_connection import WSSeaConnection
     from sea.wallet.wallet_state_manager import WalletStateManager
 
-# https://github.com/ball-network/chips/blob/80e4611fe52b174bf1a0382b9dff73805b18b8c6/CHIPs/chip-0002.md#signmessage
+# https://github.com/Chia-Network/chips/blob/80e4611fe52b174bf1a0382b9dff73805b18b8c6/CHIPs/chip-0002.md#signmessage
 CHIP_0002_SIGN_MESSAGE_PREFIX = "Sea Signed Message"
 
 
@@ -474,7 +474,7 @@ class Wallet:
         self, message: str, puzzle_hash: bytes32, is_hex: bool = False
     ) -> Tuple[G1Element, G2Element]:
         # CHIP-0002 message signing as documented at:
-        # https://github.com/ball-network/chips/blob/80e4611fe52b174bf1a0382b9dff73805b18b8c6/CHIPs/chip-0002.md#signmessage
+        # https://github.com/Chia-Network/chips/blob/80e4611fe52b174bf1a0382b9dff73805b18b8c6/CHIPs/chip-0002.md#signmessage
         private = await self.wallet_state_manager.get_private_key(puzzle_hash)
         synthetic_secret_key = calculate_synthetic_secret_key(private, DEFAULT_HIDDEN_PUZZLE_HASH)
         synthetic_pk = synthetic_secret_key.get_g1()

@@ -89,6 +89,7 @@ class Receiver:
     _harvesting_mode: Optional[HarvestingMode]
     _staking_ph:  Dict[str, int]
 
+
     def __init__(
         self,
         connection: WSSeaConnection,
@@ -224,6 +225,7 @@ class Receiver:
 
         for index, ph in enumerate(plot_infos.ph_hex):
             self._staking_ph[ph.hex()] = int(plot_infos.ph_num[index])
+
         for plot_info in plot_infos.data:
             if plot_info.filename in self._plots or plot_info.filename in self._current_sync.delta.valid.additions:
                 raise PlotAlreadyAvailableError(State.loaded, plot_info.filename)

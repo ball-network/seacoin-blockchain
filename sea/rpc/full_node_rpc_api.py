@@ -3,9 +3,12 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from chia_rs import ALLOW_BACKREFS
+
 from sea.consensus.block_record import BlockRecord
 from sea.consensus.blockchain import Blockchain, BlockchainMutexPriority
 from sea.consensus.cost_calculator import NPCResult
+from sea.consensus.pos_quality import UI_ACTUAL_SPACE_CONSTANT_FACTOR
 from sea.full_node.fee_estimator_interface import FeeEstimatorInterface
 from sea.full_node.full_node import FullNode
 from sea.full_node.mempool_check_conditions import get_puzzle_and_solution_for_coin, get_spends_for_block
@@ -55,7 +58,7 @@ async def get_average_block_time(
     if newer_block.height < 1:
         return None
 
-    prev_height = uint32(max(newer_block.height - 1, newer_block.height - height_distance))
+    prev_height = uint32(max(1, newer_block.height - height_distance))
     prev_hash = blockchain.height_to_hash(prev_height)
     assert prev_hash
     prev_block = await blockchain.get_block_record_from_db(prev_hash)
@@ -206,8 +209,6 @@ class FullNodeRpcApi:
                 sync_progress_height = uint32(0)
         else:
             sync_progress_height = uint32(0)
-
-        space = await self.service.blockchain.get_height_network_space(None if peak is None else peak.height)
 
         average_block_time: Optional[uint32] = None
         if peak is not None and peak.height > 1:
@@ -719,7 +720,11 @@ class FullNodeRpcApi:
 
         block_generator: Optional[BlockGenerator] = await self.service.blockchain.get_block_generator(block)
         assert block_generator is not None
-        spend_info = get_puzzle_and_solution_for_coin(block_generator, coin_record.coin, 0)
+        flags = 0
+        if height >= self.service.constants.HARD_FORK_HEIGHT:
+            flags = ALLOW_BACKREFS
+
+        spend_info = get_puzzle_and_solution_for_coin(block_generator, coin_record.coin, flags)
         return {"coin_solution": CoinSpend(coin_record.coin, spend_info.puzzle, spend_info.solution)}
 
     async def get_additions_and_removals(self, request: Dict[str, Any]) -> EndpointResult:

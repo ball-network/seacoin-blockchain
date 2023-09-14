@@ -19,7 +19,6 @@ log = logging.getLogger(__name__)
 
 PLOT_PUBLIC_KEY_CACHE: LRUCache[bytes, G1Element] = LRUCache(10000)
 
-
 @streamable
 @dataclass(frozen=True)
 class ProofOfSpace(Streamable):
@@ -43,6 +42,7 @@ class ProofOfSpace(Streamable):
             )
             PLOT_PUBLIC_KEY_CACHE.put(public_key, plot_public_key)
         return plot_public_key
+
 
 def get_plot_id(pos: ProofOfSpace) -> bytes32:
     assert pos.pool_public_key is None or pos.pool_contract_puzzle_hash is None

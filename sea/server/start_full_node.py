@@ -68,7 +68,7 @@ def create_full_node_service(
 
 
 def update_testnet_overrides(network_id: str, overrides: Dict[str, Any]) -> None:
-    if network_id != "testnet0":
+    if network_id != "testnet10":
         return
     # activate softforks immediately on testnet
     # these numbers are supposed to match initial-config.yaml

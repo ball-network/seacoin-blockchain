@@ -580,7 +580,7 @@ def take_offer_cmd(
 def cancel_offer_cmd(wallet_rpc_port: Optional[int], fingerprint: int, id: str, insecure: bool, fee: str) -> None:
     from .wallet_funcs import cancel_offer
 
-    asyncio.run(cancel_offer(wallet_rpc_port, fingerprint, Decimal(fee), id, insecure))
+    asyncio.run(cancel_offer(wallet_rpc_port, fingerprint, Decimal(fee), id, not insecure))
 
 
 @wallet_cmd.command("check", short_help="Check wallet DB integrity", help=check_help_text)
@@ -1544,7 +1544,14 @@ def recover_cmd(
 ) -> None:
     from .staking_funcs import find_pool_nft
 
-    asyncio.run(find_pool_nft(wallet_rpc_port, fingerprint, launcher_id, contract_address))
+    asyncio.run(
+        find_pool_nft(
+            wallet_rpc_port=wallet_rpc_port,
+            fp=fingerprint,
+            launcher_id=launcher_id,
+            contract_address=contract_address,
+        )
+    )
 
 
 @wallet_cmd.command("recover_pool_nft", short_help="recover nft sea to wallet")
@@ -1578,4 +1585,11 @@ def recover_cmd(
 ) -> None:
     from .staking_funcs import recover_pool_nft
 
-    asyncio.run(recover_pool_nft(wallet_rpc_port, fingerprint, launcher_id, contract_address))
+    asyncio.run(
+        recover_pool_nft(
+            wallet_rpc_port=wallet_rpc_port,
+            fp=fingerprint,
+            launcher_id=launcher_id,
+            contract_address=contract_address,
+        )
+    )

@@ -189,6 +189,7 @@ class Err(Enum):
 
     INVALID_STAKING_COEFFICIENT = 245
 
+
 class ValidationError(Exception):
     def __init__(self, code: Err, error_msg: str = ""):
         super().__init__(f"Error code: {code.name} {error_msg}")

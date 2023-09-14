@@ -6,12 +6,14 @@ import time
 import traceback
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar, Dict
+from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar
 
 from blspy import G1Element
-from typing_extensions import Protocol
 
 from sea.consensus.coinbase import create_puzzlehash_for_pk
+from sea.types.blockchain_format.sized_bytes import bytes32
+from typing_extensions import Protocol
+
 from sea.plot_sync.exceptions import AlreadyStartedError, InvalidConnectionTypeError
 from sea.plot_sync.util import Constants
 from sea.plotting.manager import PlotManager
@@ -28,14 +30,13 @@ from sea.protocols.harvester_protocol import (
 from sea.protocols.protocol_message_types import ProtocolMessageTypes
 from sea.server.outbound_message import NodeType, make_msg
 from sea.server.ws_connection import WSSeaConnection
-from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.util.ints import int16, uint32, uint64
 from sea.util.misc import to_batches
 
 log = logging.getLogger(__name__)
 
 
-def _convert_plot_info_list(plot_infos: List[PlotInfo]) -> Tuple[List[Plot], List[bytes32], List[int]]:
+def _convert_plot_info_list(plot_infos: List[PlotInfo])  -> Tuple[List[Plot], List[bytes32], List[int]]:
     converted: List[Plot] = []
     pks: List[G1Element] = []
     ph_hex: List[bytes32] = []
@@ -60,10 +61,7 @@ def _convert_plot_info_list(plot_infos: List[PlotInfo]) -> Tuple[List[Plot], Lis
             ph_hex.append(ph)
             ph_num.append(uint32(1))
         else:
-            index = pks.index(plot_info.farmer_public_key)
-            log.debug(f"index index index {index}")
             ph_num[pks.index(plot_info.farmer_public_key)] += 1
-    log.debug(f"index index index {ph_hex}   {ph_num}")
     return converted, ph_hex, ph_num
 
 

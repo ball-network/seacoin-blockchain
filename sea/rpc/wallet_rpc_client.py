@@ -105,7 +105,7 @@ class WalletRpcClient(RpcClient):
         return uint64((await self.fetch("get_timestamp_for_height", {"height": height}))["timestamp"])
 
     # Wallet Management APIs
-    async def get_wallets(self, wallet_type: Optional[WalletType] = None) -> Dict:
+    async def get_wallets(self, wallet_type: Optional[WalletType] = None) -> List[Dict[str, Any]]:
         request: Dict[str, Any] = {}
         if wallet_type is not None:
             request["type"] = wallet_type
@@ -1285,12 +1285,6 @@ class WalletRpcClient(RpcClient):
         return [TransactionRecord.from_json_dict_convenience(tx) for tx in response["transactions"]]
 
     # recover nft
-    async def find_pool_nft(self, launcher_id: str, contract_address: str) -> Dict:
-        response = await self.fetch("find_pool_nft", {
-            "launcher_id": launcher_id, "contract_address": contract_address
-        })
-        return response
-
     async def recover_pool_nft(self, launcher_id: str, contract_address: str) -> Dict:
         response = await self.fetch("recover_pool_nft", {
             "launcher_id": launcher_id, "contract_address": contract_address
@@ -1302,15 +1296,19 @@ class WalletRpcClient(RpcClient):
         response = await self.fetch("staking_info", {"fingerprint": fingerprint})
         return response["balance"], response["address"]
 
-    async def staking_send(self, amount: uint64, fingerprint: int) -> TransactionRecord:
+    async def staking_send(self, wallet_id: int, amount: uint64, fingerprint: int) -> TransactionRecord:
         res = await self.fetch("staking_send", {
+            "wallet_id": wallet_id,
             "amount": amount,
             "fingerprint": fingerprint,
         })
         return TransactionRecord.from_json_dict_convenience(res["transaction"])
 
-    async def staking_withdraw(self,  address: str, amount: uint64, fingerprint: int) -> TransactionRecord:
+    async def staking_withdraw(
+        self, wallet_id: int, address: str, amount: uint64, fingerprint: int
+    ) -> TransactionRecord:
         res = await self.fetch("staking_withdraw", {
+            "wallet_id": wallet_id,
             "address": address,
             "amount": amount,
             "fingerprint": fingerprint,

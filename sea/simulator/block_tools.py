@@ -1337,7 +1337,7 @@ class BlockTools:
             if passes_plot_filter(prefix_bits, plot_id, challenge_hash, signage_point):
                 new_challenge: bytes32 = calculate_pos_challenge(plot_id, challenge_hash, signage_point)
                 qualities = plot_info.prover.get_qualities_for_challenge(new_challenge)
-
+                staking_coefficient = uint64(10 ** 17)
                 for proof_index, quality_str in enumerate(qualities):
                     required_iters = calculate_iterations_quality(
                         constants.DIFFICULTY_CONSTANT_FACTOR,
@@ -1345,6 +1345,7 @@ class BlockTools:
                         plot_info.prover.get_size(),
                         difficulty,
                         signage_point,
+                        staking_coefficient,
                     )
                     if required_iters < calculate_sp_interval_iters(constants, sub_slot_iters):
                         proof_xs: bytes = plot_info.prover.get_full_proof(new_challenge, proof_index)
@@ -1769,7 +1770,7 @@ def get_full_block_and_block_record(
 
 
 # these are the costs of unknown conditions, as defined chia_rs here:
-# https://github.com/ball-network/chia_rs/pull/181
+# https://github.com/Chia-Network/chia_rs/pull/181
 def compute_cost_table() -> List[int]:
     A = 17
     B = 16

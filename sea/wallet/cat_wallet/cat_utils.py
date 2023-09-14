@@ -25,8 +25,8 @@ CAT_MOD_HASH = CAT_MOD.get_tree_hash()
 
 def empty_program() -> Program:
     # ignoring hint error here for:
-    # https://github.com/ball-network/clvm/pull/102
-    # https://github.com/ball-network/clvm/pull/106
+    # https://github.com/Chia-Network/clvm/pull/102
+    # https://github.com/Chia-Network/clvm/pull/106
     return Program.to([])  # type: ignore[no-any-return]
 
 
@@ -97,7 +97,7 @@ def next_info_for_spendable_cat(spendable_cat: SpendableCAT) -> Program:
     c = spendable_cat.coin
     list = [c.parent_coin_info, spendable_cat.inner_puzzle.get_tree_hash(), c.amount]
     # ignoring hint error here for:
-    # https://github.com/ball-network/clvm/pull/102
+    # https://github.com/Chia-Network/clvm/pull/102
     return Program.to(list)  # type: ignore[no-any-return]
 
 

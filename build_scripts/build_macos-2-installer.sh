@@ -81,10 +81,10 @@ mv dist/* ../../../build_scripts/dist/
 cd ../../../build_scripts || exit 1
 
 mkdir final_installer
-DMG_NAME="seacoin-${SEA_INSTALLER_VERSION}.dmg"
+DMG_NAME="seaCoin-${SEA_INSTALLER_VERSION}.dmg"
 if [ "$(arch)" = "arm64" ]; then
-  mv dist/"${DMG_NAME}" dist/seacoin-"${SEA_INSTALLER_VERSION}"-arm64.dmg
-  DMG_NAME=seacoin-${SEA_INSTALLER_VERSION}-arm64.dmg
+  mv dist/"${DMG_NAME}" dist/seaCoin-"${SEA_INSTALLER_VERSION}"-arm64.dmg
+  DMG_NAME=seaCoin-${SEA_INSTALLER_VERSION}-arm64.dmg
 fi
 mv dist/"$DMG_NAME" final_installer/
 

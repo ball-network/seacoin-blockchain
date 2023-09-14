@@ -101,10 +101,10 @@ def configure(
             if testnet == "true" or testnet == "t":
                 print("Setting Testnet")
                 testnet_port = "30100"
-                testnet_introducer = "introducer-testnet0.seacoin.vip"
-                testnet_dns_introducer = "dns-introducer-testnet0.seacoin.vip"
-                bootstrap_peers = ["testnet0-node.seacoin.vip"]
-                testnet = "testnet0"
+                testnet_introducer = "introducer-testnet10.seacoin.vip"
+                testnet_dns_introducer = "dns-introducer-testnet10.seacoin.vip"
+                bootstrap_peers = ["testnet10-node.seacoin.vip"]
+                testnet = "testnet10"
                 config["full_node"]["port"] = int(testnet_port)
                 if config["full_node"]["introducer_peer"] is None:
                     config["full_node"]["introducer_peer"] = {}

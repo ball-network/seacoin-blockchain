@@ -26,7 +26,12 @@ def staking_info(
 ) -> None:
     from .staking_funcs import staking_info
 
-    asyncio.run(staking_info(wallet_rpc_port, fingerprint))
+    asyncio.run(
+        staking_info(
+            wallet_rpc_port=wallet_rpc_port,
+            fp=fingerprint,
+        )
+    )
 
 
 @staking_cmd.command("send", short_help="Send sea to staking address")
@@ -38,15 +43,24 @@ def staking_info(
     default=None,
 )
 @click.option("-f", "--fingerprint", help="Set the fingerprint to specify which wallet to use", type=int)
+@click.option("-i", "--id", help="Id of the wallet to use", type=int, default=1, show_default=True, required=True)
 @click.option("-a", "--amount", help="How much sea to send, in XSEA", type=str, required=True)
 def staking_send_cmd(
     wallet_rpc_port: Optional[int],
     fingerprint: int,
+    id: int,
     amount: str,
 ) -> None:
     from .staking_funcs import staking_send
 
-    asyncio.run(staking_send(wallet_rpc_port, fingerprint, Decimal(amount)))
+    asyncio.run(
+        staking_send(
+            wallet_rpc_port=wallet_rpc_port,
+            fp=fingerprint,
+            wallet_id=id,
+            amount=Decimal(amount),
+        )
+    )
 
 
 @staking_cmd.command("withdraw", short_help="Withdraw staking sea")
@@ -58,6 +72,7 @@ def staking_send_cmd(
     default=None,
 )
 @click.option("-f", "--fingerprint", help="Set the fingerprint to specify which wallet to use", type=int)
+@click.option("-i", "--id", help="Id of the wallet to use", type=int, default=1, show_default=True, required=True)
 @click.option(
     "-a",
     "--amount",
@@ -70,9 +85,18 @@ def staking_send_cmd(
 def staking_withdraw_cmd(
     wallet_rpc_port: Optional[int],
     fingerprint: int,
+    id: int,
     amount: str,
     address: str,
 ) -> None:
     from .staking_funcs import staking_withdraw
 
-    asyncio.run(staking_withdraw(wallet_rpc_port, fingerprint, Decimal(amount), address))
+    asyncio.run(
+        staking_withdraw(
+            wallet_rpc_port=wallet_rpc_port,
+            fp=fingerprint,
+            wallet_id=id,
+            amount=Decimal(amount),
+            address=address,
+        )
+    )

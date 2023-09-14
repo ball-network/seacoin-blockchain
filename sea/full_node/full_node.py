@@ -1256,7 +1256,7 @@ class FullNode:
         if agg_state_change_summary is not None:
             self._state_changed("new_peak")
             self.log.debug(
-                f"Total time for {len(blocks_to_validate)} blocks: {time.time() - pre_validate_start}, "
+                f"Total time for {len(blocks_to_validate)} blocks: {time.monotonic() - pre_validate_start}, "
                 f"advanced: True"
             )
         return True, agg_state_change_summary

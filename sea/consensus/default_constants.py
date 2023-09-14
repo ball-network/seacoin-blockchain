@@ -61,16 +61,16 @@ default_kwargs = {
     "POOL_SUB_SLOT_ITERS": 37600000000,  # iters limit * NUM_SPS
     "STAKING_BLOCKS_SIZE": 4608 * 3,  # less BLOCKS_CACHE_SIZE
     "SOFT_FORK2_HEIGHT": 0,
-    # October 23, 2023
-    "SOFT_FORK3_HEIGHT": 4474000,
+    # November 14, 2023
+    "SOFT_FORK3_HEIGHT": 574728,
     # June 2024
-    "HARD_FORK_HEIGHT": 5496000,
+    "HARD_FORK_HEIGHT": 1537800,
     # June 2027
-    "PLOT_FILTER_128_HEIGHT": 10542000,
+    "PLOT_FILTER_128_HEIGHT": 6583560,
     # June 2030
-    "PLOT_FILTER_64_HEIGHT": 15592000,
+    "PLOT_FILTER_64_HEIGHT": 11633928,
     # June 2033
-    "PLOT_FILTER_32_HEIGHT": 20643000,
+    "PLOT_FILTER_32_HEIGHT": 16684296,
     # Disallow plots from passing the plot filter for more than one out of any four consecutive signage points.
     "UNIQUE_PLOTS_WINDOW": 4,
 }

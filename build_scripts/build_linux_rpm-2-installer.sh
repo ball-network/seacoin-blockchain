@@ -68,7 +68,7 @@ fpm -s dir -t rpm \
   --license Apache-2.0 \
   --version "$SEA_INSTALLER_VERSION" \
   --architecture "$REDHAT_PLATFORM" \
-  --description "Sea is a modern cryptocurrency built from scratch, designed to be efficient, decentralized, and secure." \
+  --description "SeaCoin is a modern cryptocurrency built from scratch, designed to be efficient, decentralized, and secure." \
   --depends /usr/lib64/libcrypt.so.1 \
   .
 # CLI only rpm done
@@ -85,7 +85,7 @@ OPT_ARCH="--x64"
 if [ "$REDHAT_PLATFORM" = "arm64" ]; then
   OPT_ARCH="--arm64"
 fi
-PRODUCT_NAME="seacoin"
+PRODUCT_NAME="sea"
 echo electron-builder build --linux rpm "${OPT_ARCH}" \
   --config.extraMetadata.name=seacoin-blockchain \
   --config.productName="${PRODUCT_NAME}" --config.linux.desktop.Name="SeaCoin Blockchain" \

@@ -28,8 +28,8 @@ from sea.util.keyring_wrapper import KeyringWrapper
 from sea.util.streamable import Streamable, streamable
 
 CURRENT_KEY_VERSION = "1.8"
-DEFAULT_USER = f"user-sea-{CURRENT_KEY_VERSION}"  # e.g. user-sea-1.8
-DEFAULT_SERVICE = f"sea-{DEFAULT_USER}"  # e.g. sea-user-sea-1.8
+DEFAULT_USER = f"user-seacoin-{CURRENT_KEY_VERSION}"  # e.g. user-sea-1.8
+DEFAULT_SERVICE = f"seacoin-{DEFAULT_USER}"  # e.g. sea-user-sea-1.8
 MAX_KEYS = 100
 MIN_PASSPHRASE_LEN = 8
 

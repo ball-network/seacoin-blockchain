@@ -350,8 +350,8 @@ class DataStore:
 
     async def _insert_terminal_node(self, key: bytes, value: bytes) -> bytes32:
         # forcing type hint here for:
-        # https://github.com/ball-network/clvm/pull/102
-        # https://github.com/ball-network/clvm/pull/106
+        # https://github.com/Chia-Network/clvm/pull/102
+        # https://github.com/Chia-Network/clvm/pull/106
         node_hash: bytes32 = Program.to((key, value)).get_tree_hash()
 
         await self._insert_node(
@@ -1234,8 +1234,8 @@ class DataStore:
 
             root_node = hash_to_node[root_node.hash]
             # TODO: Remove ignore when done.
-            #       https://github.com/ball-network/clvm/pull/102
-            #       https://github.com/ball-network/clvm/pull/106
+            #       https://github.com/Chia-Network/clvm/pull/102
+            #       https://github.com/Chia-Network/clvm/pull/106
             program: Program = Program.to(root_node)
 
         return program

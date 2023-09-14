@@ -83,7 +83,7 @@ def create_sea_directory(
             # set ports and networks, we don't want to cause a port conflict.
             port_offset = randint(1, 20000)
             config["daemon_port"] -= port_offset
-            config["network_overrides"]["config"]["simulator0"]["default_full_node_port"] = 38444 + port_offset
+            config["network_overrides"]["config"]["simulator0"]["default_full_node_port"] = 30020 + port_offset
             # wallet
             config["wallet"]["port"] += port_offset
             config["wallet"]["rpc_port"] += port_offset

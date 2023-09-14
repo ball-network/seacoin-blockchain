@@ -28,7 +28,7 @@ def calculate_pool_reward(height: uint32) -> uint64:
     Returns the pool reward at a certain block height. The pool earns 7/8 of the reward in each block. If the farmer
     is solo farming, they act as the pool, and therefore earn the entire block reward.
     These halving events will not be hit at the exact times
-    (3 years, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
+    (height, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
     rates increase continuously.
     """
 
@@ -41,7 +41,7 @@ def calculate_base_farmer_reward(height: uint32) -> uint64:
     The base fee reward is 1/8 of total block reward
 
     Returns the coinbase reward at a certain block height. These halving events will not be hit at the exact times
-    (3 years, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
+    (height, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
     rates increase continuously.
     """
 

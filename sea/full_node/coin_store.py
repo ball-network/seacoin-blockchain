@@ -614,4 +614,4 @@ class CoinStore:
                 "SELECT puzzle_hash FROM coin_record INDEXED BY coin_puzzle_hash WHERE puzzle_hash=? LIMIT ?",
                 (self.maybe_to_hex(puzzle_hash), 1),
             )
-        return existing is not None
+            return existing is not None

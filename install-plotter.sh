@@ -68,7 +68,7 @@ get_bladebit_url() {
   OS="$2"           # "ubuntu", "centos", "macos"
   ARCH="$3"         # "x86-64", "arm64"
 
-  GITHUB_BASE_URL="https://github.com/ball-network/bladebit/releases/download"
+  GITHUB_BASE_URL="https://github.com/Chia-Network/bladebit/releases/download"
   BLADEBIT_FILENAME="$(get_bladebit_filename "$BLADEBIT_VER" "$OS" "$ARCH")"
 
   echo "${GITHUB_BASE_URL}/${BLADEBIT_VER}/${BLADEBIT_FILENAME}"
@@ -79,7 +79,7 @@ get_bladebit_cuda_url() {
   OS="$2"           # "ubuntu", "centos", "macos"
   ARCH="$3"         # "x86-64", "arm64"
 
-  GITHUB_BASE_URL="https://github.com/ball-network/bladebit/releases/download"
+  GITHUB_BASE_URL="https://github.com/Chia-Network/bladebit/releases/download"
   BLADEBIT_CUDA_FILENAME="$(get_bladebit_cuda_filename "$BLADEBIT_VER" "$OS" "$ARCH")"
 
   echo "${GITHUB_BASE_URL}/${BLADEBIT_VER}/${BLADEBIT_CUDA_FILENAME}"
@@ -116,7 +116,7 @@ get_madmax_url() {
   OS="$3"
   ARCH="$4"
 
-  GITHUB_BASE_URL="https://github.com/chia-network/chia-plotter-madmax/releases/download"
+  GITHUB_BASE_URL="https://github.com/Chia-Network/chia-plotter-madmax/releases/download"
   MADMAX_FILENAME="$(get_madmax_filename "$KSIZE" "$MADMAX_VER" "$OS" "$ARCH")"
 
   echo "${GITHUB_BASE_URL}/${MADMAX_VER}/${MADMAX_FILENAME}"
@@ -127,7 +127,8 @@ if [ "$1" = "-h" ] || [ "$1" = "" ]; then
   exit 0
 fi
 
-DEFAULT_BLADEBIT_VERSION="v2.0.1"
+DEFAULT_BLADEBIT_VERSION="v3.0.0"
+DEFAULT_BLADEBIT_VERSION_FOR_MACOS="v2.0.1"
 DEFAULT_MADMAX_VERSION="0.0.2"
 VERSION=
 PLOTTER=$1
@@ -209,7 +210,11 @@ cd "${VIRTUAL_ENV}/bin"
 # Handle BladeBit and BladeBit CUDA binaries
 if [ "$PLOTTER" = "bladebit" ]; then
   if [ "$VERSION" = "" ]; then
-    VERSION="$DEFAULT_BLADEBIT_VERSION"
+    if [ "$OS" = "macos" ]; then
+      VERSION="$DEFAULT_BLADEBIT_VERSION_FOR_MACOS"
+    else
+      VERSION="$DEFAULT_BLADEBIT_VERSION"
+    fi
   fi
 
   echo -e "Installing bladebit $VERSION\n"
@@ -218,10 +223,13 @@ if [ "$PLOTTER" = "bladebit" ]; then
   url="$(get_bladebit_url "$VERSION" "$OS" "$ARCH")"
   bladebit_filename="$(get_bladebit_filename "$VERSION" "$OS" "$ARCH")"
   handle_binary "$url" "$bladebit_filename" "bladebit"
+
   # CUDA bladebit binary
-  url="$(get_bladebit_cuda_url "$VERSION" "$OS" "$ARCH")"
-  bladebit_cuda_filename="$(get_bladebit_cuda_filename "$VERSION" "$OS" "$ARCH")"
-  handle_binary "$url" "$bladebit_cuda_filename" "bladebit_cuda"
+  if [ "$OS" != "macos" ]; then
+    url="$(get_bladebit_cuda_url "$VERSION" "$OS" "$ARCH")"
+    bladebit_cuda_filename="$(get_bladebit_cuda_filename "$VERSION" "$OS" "$ARCH")"
+    handle_binary "$url" "$bladebit_cuda_filename" "bladebit_cuda"
+  fi
 
 # Handle MadMax binaries
 elif [ "$PLOTTER" = "madmax" ]; then

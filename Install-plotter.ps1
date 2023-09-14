@@ -16,7 +16,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$DEFAULT_BLADEBIT_VERSION = "v2.0.1"
+$DEFAULT_BLADEBIT_VERSION = "v3.0.0"
 $DEFAULT_MADMAX_VERSION = "0.0.2"
 $VERSION = $v
 $OS = "windows"
@@ -84,7 +84,7 @@ function Get-BladebitUrl()
         [string]$arch
     )
 
-    $GITHUB_BASE_URL = "https://github.com/ball-network/bladebit/releases/download"
+    $GITHUB_BASE_URL = "https://github.com/Chia-Network/bladebit/releases/download"
     $filename = Get-BladebitFilename -ver $ver -os $os -arch $arch
 
     "${GITHUB_BASE_URL}/${ver}/${filename}"
@@ -98,7 +98,7 @@ function Get-BladebitCudaUrl()
         [string]$arch
     )
 
-    $GITHUB_BASE_URL = "https://github.com/ball-network/bladebit/releases/download"
+    $GITHUB_BASE_URL = "https://github.com/Chia-Network/bladebit/releases/download"
     $filename = Get-BladebitCudaFilename -ver $ver -os $os -arch $arch
 
     "${GITHUB_BASE_URL}/${ver}/${filename}"
@@ -144,7 +144,7 @@ function Get-MadmaxUrl()
         [string]$arch
     )
 
-    $GITHUB_BASE_URL = "https://github.com/chia-network/chia-plotter-madmax/releases/download"
+    $GITHUB_BASE_URL = "https://github.com/Chia-Network/chia-plotter-madmax/releases/download"
     $madmax_filename = Get-MadmaxFilename -ksize $ksize -ver $ver -os $os -arch $arch
 
     "${GITHUB_BASE_URL}/${ver}/${madmax_filename}"

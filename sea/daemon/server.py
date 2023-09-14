@@ -80,30 +80,15 @@ class PlotEvent(str, Enum):
 # determine if application is a script file or frozen exe
 if getattr(sys, "frozen", False):
     name_map = {
-        "sea": "sea",
-        "sea_data_layer": "sea_data_layer",
-        "sea_data_layer_http": "sea_data_layer_http",
-        "sea_wallet": "sea_wallet",
-        "sea_full_node": "sea_full_node",
-        "sea_harvester": "sea_harvester",
-        "sea_farmer": "sea_farmer",
-        "sea_introducer": "sea_introducer",
-        "sea_timelord": "sea_timelord",
-        "sea_timelord_launcher": "sea_timelord_launcher",
         "sea_full_node_simulator": "sea_simulator",
-        "sea_seeder": "sea_seeder",
-        "sea_crawler": "sea_crawler",
     }
 
     def executable_for_service(service_name: str) -> str:
         application_path = os.path.dirname(sys.executable)
+        path = f"{application_path}/{name_map[service_name] if service_name in name_map else service_name}"
         if sys.platform == "win32" or sys.platform == "cygwin":
-            executable = name_map[service_name]
-            path = f"{application_path}/{executable}.exe"
-            return path
-        else:
-            path = f"{application_path}/{name_map[service_name]}"
-            return path
+            return path + ".exe"
+        return path
 
 else:
     application_path = os.path.dirname(__file__)
@@ -748,7 +733,10 @@ class WebSocketServer:
         if plotter == "chiapos":
             final_words = ["Renamed final file"]
         elif plotter == "bladebit":
-            final_words = ["Finished plotting in"]
+            if "cudaplot" in config["command_args"]:
+                final_words = ["Completed writing plot"]
+            else:
+                final_words = ["Finished plotting in"]
         elif plotter == "madmax":
             temp_dir = config["temp_dir"]
             final_dir = config["final_dir"]
@@ -807,7 +795,7 @@ class WebSocketServer:
     def _chiapos_plotting_command_args(self, request: Any, ignoreCount: bool) -> List[str]:
         k = request["k"]  # Plot size
         t = request["t"]  # Temp directory
-        t2 = request["t2"]  # Temp2 directory
+        t2 = request.get("t2")  # Temp2 directory
         b = request["b"]  # Buffer size
         u = request["u"]  # Buckets
         a = request.get("a")  # Fingerprint
@@ -815,8 +803,11 @@ class WebSocketServer:
         x = request["x"]  # Exclude final directory
         override_k = request["overrideK"]  # Force plot sizes < k32
 
-        command_args: List[str] = ["-k", str(k), "-t", t, "-2", t2, "-b", str(b), "-u", str(u)]
+        command_args: List[str] = ["-k", str(k), "-t", t, "-b", str(b), "-u", str(u)]
 
+        if t2 is not None:
+            command_args.append("-2")
+            command_args.append(str(t2))
         if a is not None:
             command_args.append("-a")
             command_args.append(str(a))

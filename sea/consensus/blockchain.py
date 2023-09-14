@@ -102,6 +102,9 @@ class Blockchain(BlockchainInterface):
     # maps block height (of the current heaviest chain) to block hash and sub
     # epoch summaries
     __height_map: BlockHeightMap
+    # staking cache
+    __key_in_coefficient: Dict[uint32, Dict[bytes, uint64]]
+    __height_in_network_space: Dict[uint32, uint128]
     # Unspent Store
     coin_store: CoinStore
     # Store
@@ -117,9 +120,6 @@ class Blockchain(BlockchainInterface):
     # Lock to prevent simultaneous reads and writes
     priority_mutex: PriorityMutex[BlockchainMutexPriority]
     compact_proof_lock: asyncio.Lock
-
-    __key_in_coefficient: Dict[uint32, Dict[bytes, uint64]]
-    __height_in_network_space: Dict[uint32, uint128]
 
     @staticmethod
     async def create(
@@ -1043,39 +1043,6 @@ class Blockchain(BlockchainInterface):
     ) -> uint128:
         return await self._get_network_space(UI_ACTUAL_SPACE_CONSTANT_FACTOR, newer_block_bytes, older_block_bytes)
 
-    async def get_staking_network_space(
-        self,
-        newer_block_bytes: bytes32,
-        older_block_bytes: bytes32,
-    ) -> uint128:
-        return await self._get_network_space(0.762, newer_block_bytes, older_block_bytes)
-
-    async def _get_height_network_space(
-        self,
-        space_factor: float,
-        block_range: int,
-        height: Optional[uint32],
-    ) -> uint128:
-        if height is not None and height > 1:
-            # Average over the last day
-            older_block_bytes = self.height_to_hash(uint32(max(1, height - block_range)))
-            assert older_block_bytes is not None
-            return await self._get_network_space(space_factor, self.height_to_hash(height), older_block_bytes)
-        else:
-            return uint128(0)
-
-    async def get_height_network_space(
-        self,
-        height: Optional[uint32],
-    ) -> uint128:
-        if height is not None and height > 1:
-            # Average over the last day
-            older_block_bytes = self.height_to_hash(uint32(max(1, height - 4096)))
-            assert older_block_bytes is not None
-            return await self.get_network_space(self.height_to_hash(height), older_block_bytes)
-        else:
-            return uint128(0)
-
     async def get_staking_height_network_space(
         self,
         block_range: int,
@@ -1085,7 +1052,7 @@ class Blockchain(BlockchainInterface):
             # Average over the last day
             older_block_bytes = self.height_to_hash(uint32(max(1, height - block_range)))
             assert older_block_bytes is not None
-            return await self.get_staking_network_space(self.height_to_hash(height), older_block_bytes)
+            return await self._get_network_space(0.762, self.height_to_hash(height), older_block_bytes)
         else:
             return uint128(0)
 

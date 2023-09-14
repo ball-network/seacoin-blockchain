@@ -23,10 +23,10 @@ from sea.cmds.plots import plots_cmd
 from sea.cmds.plotters import plotters_cmd
 from sea.cmds.rpc import rpc_cmd
 from sea.cmds.show import show_cmd
-from sea.cmds.staking import staking_cmd
 from sea.cmds.start import start_cmd
 from sea.cmds.stop import stop_cmd
 from sea.cmds.wallet import wallet_cmd
+from sea.cmds.staking import staking_cmd
 from sea.util.default_root import DEFAULT_KEYS_ROOT_PATH, DEFAULT_ROOT_PATH
 from sea.util.errors import KeychainCurrentPassphraseIsInvalid
 from sea.util.keychain import Keychain, set_keys_root_path
