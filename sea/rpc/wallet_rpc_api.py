@@ -3867,6 +3867,7 @@ class WalletRpcApi:
     async def recover_pool_nft(self, request) -> EndpointResult:
         launcher_hash = request.get("launcher_id", "")
         contract_address = request.get("contract_address", "")
+        fee = request.get("fee", 0)
         if not (len(launcher_hash) == 66 or len(launcher_hash) == 64):
             return {"error": "bad launcher id"}
         config: Dict = load_config(DEFAULT_ROOT_PATH, "config.yaml")
@@ -3909,30 +3910,64 @@ class WalletRpcApi:
                     contract_address = encode_puzzle_hash(
                         contract_ph, selected_network_address_prefix(config)
                     )
-            coin_spends: List[CoinSpend] = []
+            all_spends: List[CoinSpend] = []
             total_amount = 0
             record_amount = 0
+            over_amount = 0
             coin_records = await client.get_coin_records_by_puzzle_hash(contract_ph, False)
+            max_spends_in_tx = 100
+            first_coin_record = None
             for coin_record in coin_records:
                 amount = uint64(coin_record.coin.amount)
-                if coin_record.timestamp <= uint64(time.time()) - delay:
-                    coin_spends.append(CoinSpend(
-                        coin=coin_record.coin,
-                        puzzle_reveal=SerializedProgram.from_program(program_puzzle),
-                        solution=SerializedProgram.from_program(Program.to([amount, 0])),
-                    ))
-                    record_amount += amount
                 total_amount += amount
+                if first_coin_record is None:
+                    first_coin_record = coin_record
+                if coin_record.timestamp <= uint64(time.time()) - delay:
+                    if len(all_spends) < max_spends_in_tx:
+                        all_spends.append(CoinSpend(
+                            coin=coin_record.coin,
+                            puzzle_reveal=SerializedProgram.from_program(program_puzzle),
+                            solution=SerializedProgram.from_program(Program.to([amount, 0])),
+                        ))
+                        record_amount += amount
+                    else:
+                        over_amount += amount
+
+            if len(all_spends) != len(coin_records):
+                log.info(f"plotnft absorb to {max_spends_in_tx} spends to fit into block")
+                print(f"plotnft absorb to {max_spends_in_tx} spends to fit into block")
+            if len(all_spends) > 0:
+                spend_bundle: SpendBundle = SpendBundle(all_spends, G2Element())
+                full_spend: SpendBundle = spend_bundle
+                fee_tx = None
+                if fee > 0:
+                    absorb_announce = Announcement(first_coin_record.coin.name(), b"$")
+                    assert absorb_announce is not None
+                    wallet = self.service.wallet_state_manager.get_wallet(id=uint32(1), required_type=Wallet)
+                    async with self.service.wallet_state_manager.lock:
+                        fee_tx = await wallet.generate_signed_transaction(
+                            uint64(0),
+                            puzzle_hash,
+                            fee=fee,
+                            origin_id=None,
+                            coins=None,
+                            primaries=None,
+                            ignore_max_send_amount=False,
+                            coin_announcements_to_consume={absorb_announce},
+                        )
+                        assert fee_tx.spend_bundle is not None
+                        full_spend = SpendBundle.aggregate([fee_tx.spend_bundle, spend_bundle])
+                assert full_spend.fees() == fee
+                data["status"] = (await client.push_tx(full_spend))["status"]
+                if fee_tx is not None:
+                    await self.service.wallet_state_manager.add_pending_transaction(
+                        dataclasses.replace(fee_tx, spend_bundle=None)
+                    )
             data["contract_address"] = contract_address
-            data["num"] = len(coin_spends)
+            data["num"] = len(all_spends)
             data["amount"] = record_amount
+            data["over_amount"] = over_amount
             data["total_amount"] = total_amount
-            if len(coin_spends) > 0:
-                spend_bundle: SpendBundle = SpendBundle(
-                    coin_spends=coin_spends,
-                    aggregated_signature=AugSchemeMPL.aggregate([]),
-                )
-                data["status"] = (await client.push_tx(spend_bundle))["status"]
         except Exception as e:
             log.error(f"Exception from 'recover_pool_nft' {e}")
         finally:
