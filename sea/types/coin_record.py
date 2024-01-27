@@ -3,7 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from sea.protocols.wallet_protocol import CoinState
+from chia_rs import CoinState
+
 from sea.types.blockchain_format.coin import Coin
 from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.util.ints import uint32, uint64

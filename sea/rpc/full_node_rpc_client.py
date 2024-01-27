@@ -7,10 +7,11 @@ from sea.full_node.signage_point import SignagePoint
 from sea.rpc.rpc_client import RpcClient
 from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.types.coin_record import CoinRecord
-from sea.types.coin_spend import CoinSpend
+from sea.types.coin_spend import CoinSpend, CoinSpendWithConditions
 from sea.types.end_of_slot_bundle import EndOfSubSlotBundle
 from sea.types.full_block import FullBlock
 from sea.types.spend_bundle import SpendBundle
+from sea.types.stake_record import StakeRecord
 from sea.types.unfinished_header_block import UnfinishedHeaderBlock
 from sea.util.byte_types import hexstr_to_bytes
 from sea.util.ints import uint32
@@ -208,6 +209,17 @@ class FullNodeRpcClient(RpcClient):
         except Exception:
             return None
 
+    async def get_block_spends_with_conditions(self, header_hash: bytes32) -> Optional[List[CoinSpendWithConditions]]:
+        try:
+            response = await self.fetch("get_block_spends_with_conditions", {"header_hash": header_hash.hex()})
+            block_spends: List[CoinSpendWithConditions] = []
+            for block_spend in response["block_spends_with_conditions"]:
+                block_spends.append(CoinSpendWithConditions.from_json_dict(block_spend))
+            return block_spends
+
+        except Exception:
+            return None
+
     async def push_tx(self, spend_bundle: SpendBundle) -> Dict[str, Any]:
         return await self.fetch("push_tx", {"spend_bundle": spend_bundle.to_json_dict()})
 
@@ -242,6 +254,10 @@ class FullNodeRpcClient(RpcClient):
         except Exception:
             return None
 
+    async def get_mempool_items_by_coin_name(self, coin_name: bytes32) -> Dict[str, Any]:
+        response = await self.fetch("get_mempool_items_by_coin_name", {"coin_name": coin_name.hex()})
+        return response
+
     async def get_recent_signage_point_or_eos(
         self, sp_hash: Optional[bytes32], challenge_hash: Optional[bytes32]
     ) -> Optional[Any]:
@@ -273,10 +289,8 @@ class FullNodeRpcClient(RpcClient):
         response = await self.fetch("get_fee_estimate", {"cost": cost, "target_times": target_times})
         return response
 
-    async def check_puzzle_hash_coin(self, puzzle_hash: bytes32) -> Optional[bool]:
-        try:
-            response = await self.fetch("check_puzzle_hash_coin", {"puzzle_hash": puzzle_hash.hex()})
-            return response["status"]
-        except Exception:
-            return False
-
+    async def get_stake_records(self, height: int) -> List[StakeRecord]:
+        response = await self.fetch(
+            "get_stake_records", {"height": height}
+        )
+        return [StakeRecord.from_json_dict(block) for block in response["stake_records"]]

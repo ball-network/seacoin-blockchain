@@ -1,0 +1,16 @@
+[Unit]
+Description=Sea Crawler Service for %i
+Requires=sea-daemon@%i.service
+After=sea-daemon@%i.service
+
+[Service]
+Type=simple
+Environment=SEA_ROOT=/home/%i/.sea/mainnet
+ExecStart=/opt/sea/sea_crawler
+User=%i
+Group=%i
+LimitNOFILE=1048576
+LimitNPROC=1048576
+
+[Install]
+WantedBy=multi-user.target

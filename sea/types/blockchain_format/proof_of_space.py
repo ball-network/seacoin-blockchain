@@ -5,19 +5,17 @@ from dataclasses import dataclass
 from typing import Optional, cast
 
 from bitstring import BitArray
-from blspy import AugSchemeMPL, G1Element, PrivateKey
+from chia_rs import AugSchemeMPL, G1Element, PrivateKey
 from chiapos import Verifier
 
 from sea.consensus.constants import ConsensusConstants
 from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.util.hash import std_hash
 from sea.util.ints import uint8, uint32, uint64
-from sea.util.lru_cache import LRUCache
 from sea.util.streamable import Streamable, streamable
 
 log = logging.getLogger(__name__)
 
-PLOT_PUBLIC_KEY_CACHE: LRUCache[bytes, G1Element] = LRUCache(10000)
 
 @streamable
 @dataclass(frozen=True)
@@ -29,19 +27,14 @@ class ProofOfSpace(Streamable):
     farmer_public_key: G1Element
     size: uint8
     proof: bytes
-    staking_height: uint32
-    staking_coefficient: uint64
+    stake_height: uint32
+    stake_coefficient: uint64
 
     @property
     def plot_public_key(self) -> G1Element:
-        public_key = bytes(self.local_public_key + self.farmer_public_key)
-        plot_public_key: Optional[G1Element] = PLOT_PUBLIC_KEY_CACHE.get(public_key)
-        if plot_public_key is None:
-            plot_public_key = generate_plot_public_key(
-                self.local_public_key, self.farmer_public_key, self.pool_contract_puzzle_hash is not None
-            )
-            PLOT_PUBLIC_KEY_CACHE.put(public_key, plot_public_key)
-        return plot_public_key
+        return generate_plot_public_key(
+            self.local_public_key, self.farmer_public_key, self.pool_contract_puzzle_hash is not None
+        )
 
 
 def get_plot_id(pos: ProofOfSpace) -> bytes32:

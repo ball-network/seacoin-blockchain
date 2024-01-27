@@ -8,7 +8,7 @@ from math import ceil
 from pathlib import Path
 from typing import Dict, ItemsView, KeysView, List, Optional, Tuple, ValuesView
 
-from blspy import G1Element
+from chia_rs import G1Element
 from chiapos import DiskProver
 
 from sea.plotting.util import parse_plot_info
@@ -32,7 +32,7 @@ class DiskCacheEntry(Streamable):
     pool_public_key: Optional[G1Element]
     pool_contract_puzzle_hash: Optional[bytes32]
     plot_public_key: G1Element
-    local_public_key: G1Element
+    local_public_key: G1Element  # stake
     last_use: uint64
 
 
@@ -49,11 +49,11 @@ class CacheEntry:
     pool_public_key: Optional[G1Element]
     pool_contract_puzzle_hash: Optional[bytes32]
     plot_public_key: G1Element
-    local_public_key: G1Element  # staking
+    local_public_key: G1Element  # stake
     last_use: float
 
     @classmethod
-    def from_disk_prover(cls, prover: DiskProver) -> "CacheEntry":
+    def from_disk_prover(cls, prover: DiskProver) -> CacheEntry:
         (
             pool_public_key_or_puzzle_hash,
             farmer_public_key,
@@ -75,8 +75,13 @@ class CacheEntry:
         )
 
         return cls(
-            prover, farmer_public_key, pool_public_key, pool_contract_puzzle_hash, plot_public_key,
-            local_public_key, time.time()
+            prover,
+            farmer_public_key,
+            pool_public_key,
+            pool_contract_puzzle_hash,
+            plot_public_key,
+            local_public_key,  # stake
+            time.time()
         )
 
     def bump_last_use(self) -> None:
@@ -156,7 +161,7 @@ class Cache:
                     )
                     # TODO, drop the below entry dropping after few versions or whenever we force a cache recreation.
                     #       it's here to filter invalid cache entries coming from bladebit RAM plotting.
-                    #       Related: - https://github.com/ball-network/seacoin-blockchain/issues/13084
+                    #       Related: - https://github.com/Chia-Network/chia-blockchain/issues/13084
                     #                - https://github.com/Chia-Network/chiapos/pull/337
                     k = new_entry.prover.get_size()
                     if k not in estimated_c2_sizes:

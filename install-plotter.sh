@@ -91,9 +91,9 @@ get_madmax_filename() {
   OS="$3"
   ARCH="$4"
 
-  export SEA_PLOT="chia_plot"
+  export SEA_PLOT="sea_plot"
   if [ "$KSIZE" = "k34" ]; then
-    export SEA_PLOT="chia_plot_k34"
+    export SEA_PLOT="sea_plot_k34"
   fi
   SUFFIX=""
   if [ "$OS" = "macos" ]; then
@@ -127,7 +127,7 @@ if [ "$1" = "-h" ] || [ "$1" = "" ]; then
   exit 0
 fi
 
-DEFAULT_BLADEBIT_VERSION="v3.0.0"
+DEFAULT_BLADEBIT_VERSION="v3.1.0"
 DEFAULT_BLADEBIT_VERSION_FOR_MACOS="v2.0.1"
 DEFAULT_MADMAX_VERSION="0.0.2"
 VERSION=
@@ -242,11 +242,11 @@ elif [ "$PLOTTER" = "madmax" ]; then
   # k32 MadMax binary
   url="$(get_madmax_url "k32" "$VERSION" "$OS" "$ARCH")"
   madmax_filename="$(get_madmax_filename "k32" "$VERSION" "$OS" "$ARCH")"
-  handle_binary "$url" "$madmax_filename" "chia_plot"
+  handle_binary "$url" "$madmax_filename" "sea_plot"
   # k34 MadMax binary
   url="$(get_madmax_url "k34" "$VERSION" "$OS" "$ARCH")"
   madmax_filename="$(get_madmax_filename "k34" "$VERSION" "$OS" "$ARCH")"
-  handle_binary "$url" "$madmax_filename" "chia_plot_k34"
+  handle_binary "$url" "$madmax_filename" "sea_plot_k34"
 else
   usage
 fi

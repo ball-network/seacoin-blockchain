@@ -4,4 +4,4 @@
 set -e
 
 ln -s /opt/sea/resources/app.asar.unpacked/daemon/sea /usr/bin/sea || true
-ln -s /opt/sea/seacoin-blockchain /usr/bin/seacoin-blockchain || true
+ln -s /opt/ball-network/seacoin-blockchain /usr/bin/seacoin-blockchain || true

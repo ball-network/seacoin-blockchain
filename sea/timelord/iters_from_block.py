@@ -38,7 +38,7 @@ def iters_from_block(
         reward_chain_block.proof_of_space.size,
         difficulty,
         cc_sp,
-        reward_chain_block.proof_of_space.staking_coefficient,
+        reward_chain_block.proof_of_space.stake_coefficient,
     )
     return (
         calculate_sp_iters(constants, sub_slot_iters, reward_chain_block.signage_point_index),

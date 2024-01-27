@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 
-from blspy import G1Element, G2Element
+from chia_rs import G1Element, G2Element
 
 from sea.types.blockchain_format.proof_of_space import ProofOfSpace
 from sea.types.blockchain_format.sized_bytes import bytes32
@@ -41,8 +41,8 @@ class NewSignagePointHarvester(Streamable):
     sp_hash: bytes32
     pool_difficulties: List[PoolDifficulty]
     filter_prefix_bits: uint8
-    staking_height: uint32
-    staking_coefficients: List[Tuple[G1Element, uint64]]
+    stake_height: uint32
+    stake_coefficients: List[Tuple[G1Element, uint64]]
 
 
 @streamable
@@ -144,8 +144,6 @@ class PlotSyncPathList(Streamable):
 class PlotSyncPlotList(Streamable):
     identifier: PlotSyncIdentifier
     data: List[Plot]
-    ph_hex: List[bytes32]
-    ph_num: List[uint32]
     final: bool
 
     def __str__(self) -> str:

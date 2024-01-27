@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import sys
+import traceback
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -9,10 +11,8 @@ from sea.consensus.block_record import BlockRecord
 from sea.rpc.farmer_rpc_client import FarmerRpcClient
 from sea.rpc.full_node_rpc_client import FullNodeRpcClient
 from sea.rpc.wallet_rpc_client import WalletRpcClient
-from sea.types.blockchain_format.sized_bytes import bytes32
-from sea.util.bech32m import encode_puzzle_hash
-from sea.util.config import selected_network_address_prefix
 from sea.util.default_root import DEFAULT_ROOT_PATH
+from sea.util.errors import CliRpcConnectionError
 from sea.util.misc import format_bytes, format_minutes
 from sea.util.network import is_localhost
 
@@ -77,10 +77,8 @@ async def challenges(farmer_rpc_port: Optional[int], limit: int) -> None:
 
     for signage_point in signage_points:
         print(
-            (
-                f"Hash: {signage_point['signage_point']['challenge_hash']} "
-                f"Index: {signage_point['signage_point']['signage_point_index']}"
-            )
+            f"Hash: {signage_point['signage_point']['challenge_hash']} "
+            f"Index: {signage_point['signage_point']['signage_point_index']}"
         )
 
 
@@ -92,15 +90,26 @@ async def summary(
     root_path: Path = DEFAULT_ROOT_PATH,
 ) -> None:
     harvesters_summary = await get_harvesters_summary(farmer_rpc_port, root_path)
-    blockchain_state = await get_blockchain_state(rpc_port, root_path)
+    blockchain_state = None
+    try:
+        blockchain_state = await get_blockchain_state(rpc_port, root_path)
+    except CliRpcConnectionError:
+        pass
+    except Exception:
+        print("Error while trying to get blockchain state!", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
+
     farmer_running = False if harvesters_summary is None else True  # harvesters uses farmer rpc too
 
     wallet_not_ready: bool = False
     amounts = None
     try:
         amounts = await get_wallets_stats(wallet_rpc_port, root_path)
-    except Exception:
+    except CliRpcConnectionError:
         wallet_not_ready = True
+    except Exception:
+        print("Error while trying to get wallet stats!", file=sys.stderr)
+        traceback.print_exc(file=sys.stderr)
     wallet_not_running: bool = True if amounts is None else False
 
     print("Farming status: ", end="")
@@ -125,7 +134,6 @@ async def summary(
         total_plot_size = 0
         total_effective_plot_size = 0
         total_plots = 0
-        staking_ph: Dict[str, int] = {}
 
     if harvesters_summary is not None:
         harvesters_local: Dict[str, Dict[str, Any]] = {}
@@ -151,29 +159,10 @@ async def summary(
                     PlotStats.total_plot_size += total_plot_size_harvester
                     PlotStats.total_effective_plot_size += total_effective_plot_size_harvester
                     PlotStats.total_plots += plot_count_harvester
-                    for ph, count in dict(harvester_dict["staking_ph"]).items():
-                        if ph not in PlotStats.staking_ph:
-                            PlotStats.staking_ph[ph] = count
-                        else:
-                            PlotStats.staking_ph[ph] += count
                     print(
                         f"   {plot_count_harvester} plots of size: {format_bytes(total_plot_size_harvester)} on-disk, "
                         f"{format_bytes(total_effective_plot_size_harvester)}e (effective)"
                     )
-
-        async def show_staking_ph_balance():
-            if len(PlotStats.staking_ph) == 0:
-                return
-            print("Staking addresses:")
-            client: Optional[FullNodeRpcClient]
-            async with get_any_service_client(FullNodeRpcClient, rpc_port) as (client, config):
-                if client is not None:
-                    address_prefix = selected_network_address_prefix(config)
-                    for k, v in sorted(PlotStats.staking_ph.items(), key=(lambda tup: tup[1]), reverse=True):
-                        puzzle_hash = bytes32.from_hexstr(k)
-                        coins = await client.get_coin_records_by_puzzle_hash(puzzle_hash, False)
-                        balance = sum(coin.coin.amount for coin in coins) / units['sea']
-                        print(f"   {encode_puzzle_hash(puzzle_hash, address_prefix)} (balance: {balance}, plots: {v})")
 
         if len(harvesters_local) > 0:
             print(f"Local Harvester{'s' if len(harvesters_local) > 1 else ''}")
@@ -188,7 +177,6 @@ async def summary(
             f"Total size of plots: {format_bytes(PlotStats.total_plot_size)}, "
             f"{format_bytes(PlotStats.total_effective_plot_size)}e (effective)"
         )
-        await show_staking_ph_balance()
     else:
         print("Plot count: Unknown")
         print("Total size of plots: Unknown")

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Any, AsyncGenerator, Dict, Optional, Tuple
 
-from blspy import PrivateKey
+from chia_rs import PrivateKey
 
 from sea.consensus.coinbase import create_puzzlehash_for_pk
 from sea.daemon.server import WebSocketServer, daemon_launch_lock_path
@@ -26,6 +26,7 @@ from sea.util.errors import KeychainFingerprintExists
 from sea.util.ints import uint32
 from sea.util.keychain import Keychain
 from sea.util.lock import Lockfile
+from sea.util.misc import SignalHandlers
 from sea.wallet.derive_keys import master_sk_to_wallet_sk
 
 """
@@ -107,13 +108,11 @@ def create_config(
 
 async def start_simulator(sea_root: Path, automated_testing: bool = False) -> AsyncGenerator[FullNodeSimulator, None]:
     sys.argv = [sys.argv[0]]  # clear sys.argv to avoid issues with config.yaml
-    service = await start_simulator_main(True, automated_testing, root_path=sea_root)
-    await service.start()
+    started_simulator = await start_simulator_main(True, automated_testing, root_path=sea_root)
+    service = started_simulator.service
 
-    yield service._api
-
-    service.stop()
-    await service.wait_closed()
+    async with service.manage():
+        yield service._api
 
 
 async def get_full_sea_simulator(
@@ -157,7 +156,8 @@ async def get_full_sea_simulator(
         ca_key_path = sea_root / config["private_ssl_ca"]["key"]
 
         ws_server = WebSocketServer(sea_root, ca_crt_path, ca_key_path, crt_path, key_path)
-        await ws_server.setup_process_global_state()
-        async with ws_server.run():
-            async for simulator in start_simulator(sea_root, automated_testing):
-                yield simulator, sea_root, config, mnemonic, fingerprint, keychain
+        async with SignalHandlers.manage() as signal_handlers:
+            await ws_server.setup_process_global_state(signal_handlers=signal_handlers)
+            async with ws_server.run():
+                async for simulator in start_simulator(sea_root, automated_testing):
+                    yield simulator, sea_root, config, mnemonic, fingerprint, keychain

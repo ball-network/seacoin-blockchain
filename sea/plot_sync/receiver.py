@@ -87,8 +87,6 @@ class Receiver:
     _total_effective_plot_size: int
     _update_callback: ReceiverUpdateCallback
     _harvesting_mode: Optional[HarvestingMode]
-    _staking_ph:  Dict[str, int]
-
 
     def __init__(
         self,
@@ -106,7 +104,6 @@ class Receiver:
         self._total_effective_plot_size = 0
         self._update_callback = update_callback
         self._harvesting_mode = None
-        self._staking_ph = {}
 
     async def trigger_callback(self, update: Optional[Delta] = None) -> None:
         try:
@@ -125,7 +122,6 @@ class Receiver:
         self._total_plot_size = 0
         self._total_effective_plot_size = 0
         self._harvesting_mode = None
-        self._staking_ph.clear()
 
     def connection(self) -> WSSeaConnection:
         return self._connection
@@ -222,9 +218,6 @@ class Receiver:
 
     async def _process_loaded(self, plot_infos: PlotSyncPlotList) -> None:
         self._validate_identifier(plot_infos.identifier)
-
-        for index, ph in enumerate(plot_infos.ph_hex):
-            self._staking_ph[ph.hex()] = int(plot_infos.ph_num[index])
 
         for plot_info in plot_infos.data:
             if plot_info.filename in self._plots or plot_info.filename in self._current_sync.delta.valid.additions:
@@ -386,5 +379,4 @@ class Receiver:
             "syncing": syncing,
             "last_sync_time": self._last_sync.time_done,
             "harvesting_mode": self._harvesting_mode,
-            "staking_ph": self._staking_ph,
         }

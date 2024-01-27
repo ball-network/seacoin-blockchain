@@ -1,0 +1,17 @@
+[Unit]
+Description=Sea Data Layer Service for %i
+Requires=sea-daemon@%i.service
+After=sea-daemon@%i.service
+
+[Service]
+Type=simple
+Environment=SEA_ROOT=/home/%i/.sea/mainnet
+ExecStart=/opt/sea/sea_data_layer
+User=%i
+Group=%i
+LimitNOFILE=1048576
+LimitNPROC=1048576
+TimeoutStopSec=15
+
+[Install]
+WantedBy=multi-user.target

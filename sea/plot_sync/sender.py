@@ -8,10 +8,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Generic, Iterable, List, Optional, Tuple, Type, TypeVar
 
-from blspy import G1Element
-
-from sea.consensus.coinbase import create_puzzlehash_for_pk
-from sea.types.blockchain_format.sized_bytes import bytes32
 from typing_extensions import Protocol
 
 from sea.plot_sync.exceptions import AlreadyStartedError, InvalidConnectionTypeError
@@ -36,11 +32,8 @@ from sea.util.misc import to_batches
 log = logging.getLogger(__name__)
 
 
-def _convert_plot_info_list(plot_infos: List[PlotInfo])  -> Tuple[List[Plot], List[bytes32], List[int]]:
+def _convert_plot_info_list(plot_infos: List[PlotInfo]) -> List[Plot]:
     converted: List[Plot] = []
-    pks: List[G1Element] = []
-    ph_hex: List[bytes32] = []
-    ph_num: List[uint32] = []
     for plot_info in plot_infos:
         converted.append(
             Plot(
@@ -55,14 +48,7 @@ def _convert_plot_info_list(plot_infos: List[PlotInfo])  -> Tuple[List[Plot], Li
                 compression_level=plot_info.prover.get_compression_level(),
             )
         )
-        if plot_info.farmer_public_key not in pks:
-            ph = create_puzzlehash_for_pk(plot_info.farmer_public_key)
-            pks.append(plot_info.farmer_public_key)
-            ph_hex.append(ph)
-            ph_num.append(uint32(1))
-        else:
-            ph_num[pks.index(plot_info.farmer_public_key)] += 1
-    return converted, ph_hex, ph_num
+    return converted
 
 
 class PayloadType(Protocol):
@@ -296,10 +282,8 @@ class Sender:
     def process_batch(self, loaded: List[PlotInfo], remaining: int) -> None:
         log.debug(f"process_batch {self}: loaded {len(loaded)}, remaining {remaining}")
         if len(loaded) > 0 or remaining == 0:
-            converted, ph_hex, ph_num = _convert_plot_info_list(loaded)
-            self._add_message(
-                ProtocolMessageTypes.plot_sync_loaded, PlotSyncPlotList, converted, ph_hex, ph_num, remaining == 0
-            )
+            converted = _convert_plot_info_list(loaded)
+            self._add_message(ProtocolMessageTypes.plot_sync_loaded, PlotSyncPlotList, converted, remaining == 0)
 
     def sync_done(self, removed: List[Path], duration: float) -> None:
         log.debug(f"sync_done {self}: removed {len(removed)}, duration {duration}")

@@ -29,7 +29,7 @@ from sea.types.blockchain_format.proof_of_space import verify_and_get_quality_st
 from sea.types.blockchain_format.sized_bytes import bytes32
 from sea.types.blockchain_format.slots import ChallengeChainSubSlot, RewardChainSubSlot
 from sea.types.blockchain_format.sub_epoch_summary import SubEpochSummary
-from sea.types.blockchain_format.vdf import VDFInfo, VDFProof
+from sea.types.blockchain_format.vdf import VDFInfo, VDFProof, validate_vdf
 from sea.types.end_of_slot_bundle import EndOfSubSlotBundle
 from sea.types.header_block import HeaderBlock
 from sea.types.weight_proof import (
@@ -589,20 +589,6 @@ class WeightProofHandler:
         fork_point, _ = self.get_fork_point(summaries)
         return True, fork_point
 
-    def get_fork_point_no_validations(self, weight_proof: WeightProof) -> Tuple[bool, uint32]:
-        log.debug("get fork point skip validations")
-        assert self.blockchain is not None
-        assert len(weight_proof.sub_epochs) > 0
-        if len(weight_proof.sub_epochs) == 0:
-            return False, uint32(0)
-        summaries, sub_epoch_weight_list = _validate_sub_epoch_summaries(self.constants, weight_proof)
-        if summaries is None:
-            log.warning("weight proof failed to validate sub epoch summaries")
-            return False, uint32(0)
-        assert sub_epoch_weight_list is not None
-        fork_height, _ = self.get_fork_point(summaries)
-        return True, fork_height
-
     async def validate_weight_proof(self, weight_proof: WeightProof) -> Tuple[bool, uint32, List[SubEpochSummary]]:
         assert self.blockchain is not None
         if len(weight_proof.sub_epochs) == 0:
@@ -1090,7 +1076,7 @@ def _validate_sub_slot_data(
         if (not prev_ssd.is_end_of_slot()) and (not sub_slot_data.cc_slot_end.normalized_to_identity):
             assert prev_ssd.cc_ip_vdf_info
             input = prev_ssd.cc_ip_vdf_info.output
-        if not sub_slot_data.cc_slot_end.is_valid(constants, input, sub_slot_data.cc_slot_end_info):
+        if not validate_vdf(sub_slot_data.cc_slot_end, constants, input, sub_slot_data.cc_slot_end_info):
             log.error(f"failed cc slot end validation  {sub_slot_data.cc_slot_end_info}")
             return False, []
     else:
@@ -1255,7 +1241,7 @@ def validate_recent_blocks(
             if not adjusted:
                 assert prev_block_record is not None
                 prev_block_record = dataclasses.replace(
-                    prev_block_record, deficit=deficit % constants.MIN_BLOCKS_PER_CHALLENGE_BLOCK
+                    prev_block_record, deficit=uint8(deficit % constants.MIN_BLOCKS_PER_CHALLENGE_BLOCK)
                 )
                 sub_blocks.add_block_record(prev_block_record)
                 adjusted = True
@@ -1328,7 +1314,7 @@ def _validate_pospace_recent_chain(
         block.reward_chain_block.proof_of_space.size,
         diff,
         cc_sp_hash,
-        block.reward_chain_block.proof_of_space.staking_coefficient,
+        block.reward_chain_block.proof_of_space.stake_coefficient,
     )
     return required_iters
 
@@ -1379,7 +1365,7 @@ def __validate_pospace(
         sub_slot_data.proof_of_space.size,
         curr_diff,
         cc_sp_hash,
-        sub_slot_data.proof_of_space.staking_coefficient,
+        sub_slot_data.proof_of_space.stake_coefficient,
     )
 
 
@@ -1634,9 +1620,9 @@ def _validate_vdf_batch(
 ) -> bool:
     for vdf_proof_bytes, class_group_bytes, info in vdf_list:
         vdf = VDFProof.from_bytes(vdf_proof_bytes)
-        class_group = ClassgroupElement.from_bytes(class_group_bytes)
+        class_group = ClassgroupElement.create(class_group_bytes)
         vdf_info = VDFInfo.from_bytes(info)
-        if not vdf.is_valid(constants, class_group, vdf_info):
+        if not validate_vdf(vdf, constants, class_group, vdf_info):
             return False
 
         if shutdown_file_path is not None and not shutdown_file_path.is_file():
@@ -1711,7 +1697,12 @@ async def validate_weight_proof_inner(
                 return False, []
 
     valid_recent_blocks, records_bytes = await recent_blocks_validation_task
-
+    # valid_recent_blocks, records_bytes = validate_recent_blocks(
+    #     constants,
+    #     wp_recent_chain_bytes,
+    #     summary_bytes,
+    #     pathlib.Path(shutdown_file_name),
+    # )
     if not valid_recent_blocks or records_bytes is None:
         log.error("failed validating weight proof recent blocks")
         # Verify the data

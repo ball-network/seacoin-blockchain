@@ -3,7 +3,9 @@ from __future__ import annotations
 from sea.util.ints import uint32, uint64
 
 # 1 Sea coin = 1,000,000,000,000 = 1 trillion mojo.
-_mojo_per_sea = 1000000000000
+MOJO_PER_XSEA = 1000000000000
+STAKE_FORK_HEIGHT = 930000
+OLD_STAKE_FORK_HEIGHT = 1000000
 _reward_per = [
     (150000, 8),
     (6000000, 2),
@@ -28,11 +30,13 @@ def calculate_pool_reward(height: uint32) -> uint64:
     Returns the pool reward at a certain block height. The pool earns 7/8 of the reward in each block. If the farmer
     is solo farming, they act as the pool, and therefore earn the entire block reward.
     These halving events will not be hit at the exact times
-    (height, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
+    (3 years, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
     rates increase continuously.
     """
 
-    return uint64(int((7 / 8) * calculate_reward(height) * _mojo_per_sea))
+    if height < STAKE_FORK_HEIGHT:
+        return uint64(int((7 / 8) * calculate_reward(height) * MOJO_PER_XSEA))
+    return uint64(0)
 
 
 def calculate_base_farmer_reward(height: uint32) -> uint64:
@@ -41,16 +45,24 @@ def calculate_base_farmer_reward(height: uint32) -> uint64:
     The base fee reward is 1/8 of total block reward
 
     Returns the coinbase reward at a certain block height. These halving events will not be hit at the exact times
-    (height, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
+    (3 years, etc), due to fluctuations in difficulty. They will likely come early, if the network space and VDF
     rates increase continuously.
     """
 
-    return uint64(int((1 / 8) * calculate_reward(height) * _mojo_per_sea))
+    if height < STAKE_FORK_HEIGHT:
+        return uint64(int((1 / 8) * calculate_reward(height) * MOJO_PER_XSEA))
+    return uint64(0.2 * MOJO_PER_XSEA)
 
 
 def calculate_community_reward(height: uint32) -> uint64:
-    """
-    Community Rewards: 3% every block
-    """
+    if height < STAKE_FORK_HEIGHT:
+        return uint64(int((3 / 100) * calculate_reward(height) * MOJO_PER_XSEA))
+    return uint64(100 * MOJO_PER_XSEA)
 
-    return uint64(int((3 / 100) * calculate_reward(height) * _mojo_per_sea))
+
+def calculate_stake_farm_reward(height: uint32) -> uint64:
+    return uint64(MOJO_PER_XSEA)
+
+
+def calculate_stake_lock_reward(scale: float) -> int:
+    return int(10000 * scale * MOJO_PER_XSEA)

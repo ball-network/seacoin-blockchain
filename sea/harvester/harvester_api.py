@@ -6,7 +6,7 @@ import time
 from pathlib import Path
 from typing import List, Optional, Tuple
 
-from blspy import AugSchemeMPL, G1Element, G2Element
+from chia_rs import AugSchemeMPL, G1Element, G2Element
 
 from sea.consensus.pot_iterations import calculate_iterations_quality, calculate_sp_interval_iters
 from sea.harvester.harvester import Harvester
@@ -84,7 +84,7 @@ class HarvesterAPI:
 
         start = time.time()
         assert len(new_challenge.challenge_hash) == 32
-        staking_coefficients = {bytes(k): v for k, v in new_challenge.staking_coefficients}
+        stake_coefficients = {bytes(k): v for k, v in new_challenge.stake_coefficients}
 
         loop = asyncio.get_running_loop()
 
@@ -124,8 +124,8 @@ class HarvesterAPI:
                     )
                     return []
 
-                staking_coefficient: Optional[uint64] = staking_coefficients.get(bytes(plot_info.farmer_public_key))
-                if staking_coefficient is None:
+                stake_coefficient: Optional[uint64] = stake_coefficients.get(bytes(plot_info.farmer_public_key))
+                if stake_coefficient is None:
                     return []
 
                 responses: List[Tuple[bytes32, ProofOfSpace]] = []
@@ -149,7 +149,7 @@ class HarvesterAPI:
                             plot_info.prover.get_size(),
                             difficulty,
                             new_challenge.sp_hash,
-                            staking_coefficient
+                            stake_coefficient,
                         )
                         sp_interval_iters = calculate_sp_interval_iters(self.harvester.constants, sub_slot_iters)
                         if required_iters < sp_interval_iters:
@@ -202,8 +202,8 @@ class HarvesterAPI:
                                         plot_info.farmer_public_key,
                                         uint8(plot_info.prover.get_size()),
                                         proof_xs,
-                                        new_challenge.staking_height,
-                                        staking_coefficient,
+                                        new_challenge.stake_height,
+                                        stake_coefficient,
                                     ),
                                 )
                             )
@@ -281,7 +281,7 @@ class HarvesterAPI:
             uint32(passed),
             uint32(total_proofs_found),
             uint32(total),
-            uint64(time_taken * 1_000_000),  # nano seconds,
+            uint64(time_taken * 1_000_000),  # microseconds
         )
         pass_msg = make_msg(ProtocolMessageTypes.farming_info, farming_info)
         await peer.send_message(pass_msg)
@@ -302,7 +302,7 @@ class HarvesterAPI:
             },
         )
 
-    @api_request()
+    @api_request(reply_types=[ProtocolMessageTypes.respond_signatures])
     async def request_signatures(self, request: harvester_protocol.RequestSignatures) -> Optional[Message]:
         """
         The farmer requests a signature on the header hash, for one of the proofs that we found.

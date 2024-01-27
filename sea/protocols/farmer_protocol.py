@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Tuple, List
+from typing import Optional, List, Tuple
 
-from blspy import G2Element, G1Element
+from chia_rs import G1Element, G2Element
 
 from sea.types.blockchain_format.pool_target import PoolTarget
 from sea.types.blockchain_format.proof_of_space import ProofOfSpace
@@ -72,15 +72,14 @@ class SignedValues(Streamable):
     foliage_transaction_block_signature: G2Element
 
 
-# staking
 @streamable
 @dataclass(frozen=True)
-class FarmerStakingCoefficients(Streamable):
-    staking_coefficients: List[Tuple[G1Element, uint64]]
+class FarmerStakeCoefficients(Streamable):
+    stake_coefficients: List[Tuple[G1Element, uint64]]
 
 
 @streamable
 @dataclass(frozen=True)
-class RequestStakingCoefficients(Streamable):
+class RequestStakeCoefficients(Streamable):
     height: uint32
     farmer_public_keys: List[G1Element]

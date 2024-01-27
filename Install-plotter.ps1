@@ -16,7 +16,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$DEFAULT_BLADEBIT_VERSION = "v3.0.0"
+$DEFAULT_BLADEBIT_VERSION = "v3.1.0"
 $DEFAULT_MADMAX_VERSION = "0.0.2"
 $VERSION = $v
 $OS = "windows"
@@ -113,10 +113,10 @@ function Get-MadmaxFilename()
         [string]$arch
     )
 
-    $chia_plot = "chia_plot"
+    $sea_plot = "sea_plot"
     if ("${ksize}" -eq "k34")
     {
-        $chia_plot = "chia_plot_k34"
+        $sea_plot = "sea_plot_k34"
     }
     $suffix = ""
     if ("${os}" -eq "macos")
@@ -132,7 +132,7 @@ function Get-MadmaxFilename()
         $suffix = "-${arch}"
     }
 
-    "${chia_plot}-${ver}${suffix}"
+    "${sea_plot}-${ver}${suffix}"
 }
 
 function Get-MadmaxUrl()
@@ -225,11 +225,11 @@ try {
 
         $url = Get-MadmaxUrl -ksize "k32" -ver $version -os $os -arch $arch
         $dest_dir = $PWD
-        Get-Binary -url $url -dest_dir $dest_dir -new_filename "chia_plot_k32.exe"
+        Get-Binary -url $url -dest_dir $dest_dir -new_filename "sea_plot_k32.exe"
 
         $url = Get-MadmaxUrl -ksize "k34" -ver $version -os $os -arch $arch
         $dest_dir = $PWD
-        Get-Binary -url $url -dest_dir $dest_dir -new_filename "chia_plot_k34.exe"
+        Get-Binary -url $url -dest_dir $dest_dir -new_filename "sea_plot_k34.exe"
     }
     else
     {

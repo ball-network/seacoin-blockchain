@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 
 from sea.data_layer.data_layer import DataLayer
-from sea.server.server import SeaServer
+from sea.server.server import seaServer
 
 
 class DataLayerAPI:
@@ -18,7 +18,7 @@ class DataLayerAPI:
     #     self.full_node.state_changed_callback = callback
 
     @property
-    def server(self) -> SeaServer:
+    def server(self) -> seaServer:
         return self.data_layer.server
 
     def ready(self) -> bool:
