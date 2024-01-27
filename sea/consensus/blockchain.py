@@ -1411,7 +1411,7 @@ class Blockchain(BlockchainInterface):
 
     async def check_stake_coefficient(self, pos: ProofOfSpace) -> bool:
         coefficient = await self.get_stake_coefficient(pos.stake_height, pos.farmer_public_key)
-        log.info(f"validate block {pos.stake_height} height {pos.stake_coefficient} stake {coefficient}")
+        log.debug(f"validate block {pos.stake_height} height {pos.stake_coefficient} stake {coefficient}")
         return pos.stake_coefficient != coefficient
 
     async def get_stake_farm_records(
