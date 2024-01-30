@@ -108,7 +108,7 @@ class CoinStore:
         if height == 0:
             assert len(included_reward_coins) == 0
         else:
-            assert len(included_reward_coins) >= 2
+            assert len(included_reward_coins) >= 1
 
         for coin in included_reward_coins:
             reward_coin_r: CoinRecord = CoinRecord(
